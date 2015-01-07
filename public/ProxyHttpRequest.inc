@@ -83,8 +83,9 @@ class ProxyHttpRequest extends HttpRequest
 		$message = parent::send();
 		Log::add($message);
 		
-		// If redirect, rewrite Location header.
 		$headers = $message->getHeaders();
+		
+		// If redirect, rewrite Location header.
 		if (isset($headers['Location'])) {
 			if (parse_url($headers['Location'], PHP_URL_HOST)) {
 				TextExternalUrlFilters::applyAll($headers['Location']);
@@ -93,6 +94,12 @@ class ProxyHttpRequest extends HttpRequest
 			// Header redirects require full URLs, with scheme and host.
 			$headers['Location'] = RedirectWhenBlockedFull::getBaseUrl() . ltrim($headers['Location'], '/');
 			
+			$message->setHeaders($headers);
+		}
+		
+		// Rewrite set-cookie headers.
+		if(isset($headers['Set-Cookie'])) {
+			$headers['Set-Cookie'] = $this->getFilteredSetCookie($headers['Set-Cookie']);
 			$message->setHeaders($headers);
 		}
 		
@@ -282,5 +289,22 @@ class ProxyHttpRequest extends HttpRequest
 			case 'text/html':
 				return self::CONTENT_TYPE_TEXT_HTML;
 		}
+	}
+	
+	private static function getFilteredSetCookie($set_cookie) {
+		$all_chunks = explode(';', $set_cookie);
+		$filtered_chunks = array();
+		foreach($all_chunks as &$chunk) {
+			$chunk = trim($chunk);
+			list($key) = explode('=', $chunk);
+			switch($key) {
+				case 'path':
+				case 'domain':
+					continue 2;
+				default:
+					$filtered_chunks[] = $chunk;
+			}
+		}
+		return implode('; ', $filtered_chunks);
 	}
 }
