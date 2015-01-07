@@ -5,7 +5,7 @@ class TextExternalUrlFilters
 
 	private static $hosts;
 
-	public static function addHost($host, $pattern = null)
+	public static function addHost($host)
 	{
 		if (! isset(self::$hosts[$host])) {
 			self::$hosts[$host] = array();
@@ -95,7 +95,16 @@ class TextExternalUrlFilters
 	public static function applyReverse(&$body)
 	{
 		foreach (RedirectWhenBlockedFull::getAltBaseUrls() as $alt_base_url) {
-			$body = str_replace($alt_base_url, '', $body);
+			foreach (array(
+				$alt_base_url,
+				urlencode($alt_base_url),
+				
+				// Special case when only first colon is encoded.
+				// Should be moved to site-specific config.
+				str_replace('://', urlencode(':') . '//', $alt_base_url)
+			) as $alt_base_url) {
+				$body = str_replace($alt_base_url, '', $body);
+			}
 		}
 	}
 
