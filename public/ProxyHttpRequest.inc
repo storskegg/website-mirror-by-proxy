@@ -156,7 +156,7 @@ class ProxyHttpRequest extends HttpRequest
 						break;
 					}
 				}
-				
+
 				// Default title.
 				if (! isset($title) || ! $title) {
 					$title = '免翻墙镜像';
@@ -234,6 +234,8 @@ class ProxyHttpRequest extends HttpRequest
 			TextInternalUrlFilters::applyAll($body);
 			TextExternalUrlFilters::applyAll($body, $this->message_content_type);
 			$message->setBody($body);
+			
+			Log::add($body);
 		}
 		
 		return $message;
@@ -285,6 +287,7 @@ class ProxyHttpRequest extends HttpRequest
 			
 			case 'application/javascript':
 			case 'application/x-javascript':
+			case 'text/javascript':
 				return self::CONTENT_TYPE_JAVASCRIPT;
 			
 			case 'text/css':

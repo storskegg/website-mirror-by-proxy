@@ -10,7 +10,8 @@ Log::add($_SERVER);
 Log::add(new Conf());
 
 if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME]) &&
-	 $_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] == Conf::OUTPUT_TYPE_ALT_BASE_URLS) {
+	 $_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
+	 Conf::OUTPUT_TYPE_ALT_BASE_URLS) {
 	
 	// Key cannot be empty.
 	if (Conf::$alt_base_urls_key) {
@@ -28,29 +29,32 @@ if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME]) &&
 $request = new ProxyHttpRequest();
 Log::add($request);
 
-$message = $request->send();
-Log::add($message);
-
-
-
-if (isset($_SERVER['HTTP_ORIGIN'])) {
-	$downstream_origin = $_SERVER['HTTP_ORIGIN'];
-} elseif (isset($_SERVER['HTTP_REFERER'])) {
-	$downstream_origin = http_build_scheme_host($_SERVER['HTTP_REFERER']);
+// Hijack crossdomain.xml.
+if ($request->getUrlComponent('path') == '/crossdomain.xml' && getDownstreamOrigin()) {
+	header('Content-Type: application/xml');
+	$downstream_origin = getDownstreamOrigin();
+	print 
+		<<<EOF
+<?xml version="1.0" ?>
+<cross-domain-policy>
+  <site-control permitted-cross-domain-policies="master-only"/>
+  <allow-access-from domain="$downstream_origin"/>
+  <allow-http-request-headers-from domain="$downstream_origin" headers="*"/>
+</cross-domain-policy>
+EOF;
+	exit();
 }
 
-if (isset($downstream_origin)) {
-	foreach (RedirectWhenBlockedFull::getAltBaseUrls() as $alt_url_base) {
-		if ($downstream_origin == http_build_scheme_host($alt_url_base)) {
-			removeHeaderFromMessage($message, 'Access-Control-Allow-Origin');
-			header('Access-Control-Allow-Origin: ' . $downstream_origin);
-			
-			// See http://stackoverflow.com/questions/12409600/error-request-header-field-content-type-is-not-allowed-by-access-control-allow.
-			removeHeaderFromMessage($message, 'Access-Control-Allow-Headers');
-			header(
-				'Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
-		}
-	}
+$message = $request->send();
+
+if (getDownstreamOrigin()) {
+	removeHeaderFromMessage($message, 'Access-Control-Allow-Origin');
+	header('Access-Control-Allow-Origin: ' . getDownstreamOrigin());
+	
+	// See http://stackoverflow.com/questions/12409600/error-request-header-field-content-type-is-not-allowed-by-access-control-allow.
+	removeHeaderFromMessage($message, 'Access-Control-Allow-Headers');
+	header(
+		'Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 }
 
 $message->send();
