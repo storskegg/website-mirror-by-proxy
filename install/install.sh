@@ -20,4 +20,6 @@ pecl_install pecl/propro propro
 pecl_install pecl_http-1.7.6 http
 
 echo "Enabling Apache modules"
+a2enmod proxy
+a2enmod proxy_http
 a2enmod rewrite
