@@ -84,6 +84,7 @@ class ProxyHttpRequest extends HttpRequest
 		Log::add($message);
 		
 		$headers = $message->getHeaders();
+		$new_headers = array();
 		
 		// If redirect, rewrite Location header.
 		if (isset($headers['Location'])) {
@@ -93,18 +94,15 @@ class ProxyHttpRequest extends HttpRequest
 			
 			// Header redirects require full URLs, with scheme and host.
 			if (! parse_url($headers['Location'], PHP_URL_HOST)) {
-				$headers['Location'] = RedirectWhenBlockedFull::getBaseUrl() .
+				$new_headers['Location'] = RedirectWhenBlockedFull::getBaseUrl() .
 					 ltrim($headers['Location'], '/');
 			}
-			
-			$message->setHeaders($headers);
 		}
 		
 		// Rewrite set-cookie headers.
 		if (isset($headers['Set-Cookie'])) {
-			$headers['Set-Cookie'] = $this->getFilteredSetCookie(
+			$new_headers['Set-Cookie'] = $this->getFilteredSetCookie(
 				$headers['Set-Cookie']);
-			$message->setHeaders($headers);
 		}
 		
 		$this->message_content_type = $this->getContentTypeFromMessage($message);
@@ -156,7 +154,7 @@ class ProxyHttpRequest extends HttpRequest
 						break;
 					}
 				}
-
+				
 				// Default title.
 				if (! isset($title) || ! $title) {
 					$title = '免翻墙镜像';
@@ -171,8 +169,7 @@ class ProxyHttpRequest extends HttpRequest
 					// RWB will turn output into JSONP. Remove content-type header to keep header sent by RWB.
 					$headers = $message->getHeaders();
 					if (isset($headers['Content-Type'])) {
-						unset($headers['Content-Type']);
-						$message->setHeaders($headers);
+						$new_headers['Content-Type'] = NULL;
 					}
 				}
 				
@@ -235,7 +232,25 @@ class ProxyHttpRequest extends HttpRequest
 			TextExternalUrlFilters::applyAll($body, $this->message_content_type);
 			$message->setBody($body);
 			
+			// Remove content-length, since this might be different after modification.
+			$new_headers['Content-Length'] = NULL;
+			
 			Log::add($body);
+		}
+		
+		// Overwrite headers if needed.
+		if ($new_headers) {
+			foreach ($new_headers as $key => $value) {
+				if ($value === NULL) {
+					if (isset($headers[$key])) {
+						unset($headers[$key]);
+					}
+				} else {
+					$headers[$key] = $value;
+				}
+			}
+			
+			$message->setHeaders($headers);
 		}
 		
 		return $message;

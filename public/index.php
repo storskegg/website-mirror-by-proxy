@@ -9,8 +9,7 @@ header('Cache-Control: max-age=' . Conf::$default_cache_control_max_age);
 Log::add($_SERVER);
 Log::add(new Conf());
 
-if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME]) &&
-	 $_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
+if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME]) && $_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
 	 Conf::OUTPUT_TYPE_ALT_BASE_URLS) {
 	
 	// Key cannot be empty.
@@ -30,7 +29,8 @@ $request = new ProxyHttpRequest();
 Log::add($request);
 
 // Hijack crossdomain.xml.
-if ($request->getUrlComponent('path') == '/crossdomain.xml' && getDownstreamOrigin()) {
+if ($request->getUrlComponent('path') == '/crossdomain.xml' &&
+	 getDownstreamOrigin()) {
 	header('Content-Type: application/xml');
 	$downstream_origin = getDownstreamOrigin();
 	print 
@@ -57,4 +57,16 @@ if (getDownstreamOrigin()) {
 		'Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
 }
 
-$message->send();
+foreach ($message->getHeaders() as $key => $values) {
+	if (! is_array(($values))) {
+		$values = array(
+			$values
+		);
+	}
+	
+	foreach ($values as $i => $value) {
+		header($key . ': ' . $value, ($i == 0));
+	}
+}
+
+print $message->getBody();
