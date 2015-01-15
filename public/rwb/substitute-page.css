@@ -23,6 +23,13 @@ h1 {
 	text-align: center;
 }
 
+div.top {
+	color: #222;
+	font-size: 90%;
+	padding: 5px;
+	text-align: center;
+}
+
 iframe {
 	border: 0;
 	margin: 0;
