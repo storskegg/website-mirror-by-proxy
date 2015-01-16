@@ -1,7 +1,5 @@
 #!/bin/bash
 function pecl_install {
-	# First uninstall to replace older versions, if any.
-	pecl uninstall $1
 	pecl install $1
 	echo "extension=$2.so" | sudo tee /etc/php5/mods-available/$2.ini
 	echo "; priority=$3" | sudo tee -a /etc/php5/mods-available/$2.ini
