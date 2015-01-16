@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html
-	manifest="<?php print $rwb_path_relative_to_request_path ?>/rwb.appcache">
+	manifest="<?php print $rwb_path_relative_to_request_path ?>/rwb.appcache?hash=<?php print rwb_appcache_get_hash() ?>">
 <head>
 <meta charset="UTF-8">
 <title><?php print self::$website_title ?></title>

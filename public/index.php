@@ -10,19 +10,19 @@ Log::add($_SERVER);
 Log::add(new Conf());
 
 if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME]) && $_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
-	 Conf::OUTPUT_TYPE_ALT_BASE_URLS) {
-	
-	// Key cannot be empty.
-	if (Conf::$alt_base_urls_key) {
-		
-		// Verify key. Set this in conf-local.inc.
-		if (isset($_GET['key']) && $_GET['key'] == Conf::$alt_base_urls_key) {
-			
-			header('Content-Type: application/javascript');
-			print json_encode(RedirectWhenBlockedFull::getAltBaseUrls());
-			exit();
-		}
-	}
+     Conf::OUTPUT_TYPE_ALT_BASE_URLS) {
+    
+    // Key cannot be empty.
+    if (Conf::$alt_base_urls_key) {
+        
+        // Verify key. Set this in conf-local.inc.
+        if (isset($_GET['key']) && $_GET['key'] == Conf::$alt_base_urls_key) {
+            
+            header('Content-Type: application/javascript');
+            print json_encode(RedirectWhenBlockedFull::getAltBaseUrls());
+            exit();
+        }
+    }
 }
 
 $request = new ProxyHttpRequest();
@@ -30,11 +30,11 @@ Log::add($request);
 
 // Hijack crossdomain.xml.
 if ($request->getUrlComponent('path') == '/crossdomain.xml' &&
-	 getDownstreamOrigin()) {
-	header('Content-Type: application/xml');
-	$downstream_origin = getDownstreamOrigin();
-	print 
-		<<<EOF
+     getDownstreamOrigin()) {
+    header('Content-Type: application/xml');
+    $downstream_origin = getDownstreamOrigin();
+    print 
+        <<<EOF
 <?xml version="1.0" ?>
 <cross-domain-policy>
   <site-control permitted-cross-domain-policies="master-only"/>
@@ -42,31 +42,33 @@ if ($request->getUrlComponent('path') == '/crossdomain.xml' &&
   <allow-http-request-headers-from domain="$downstream_origin" headers="*"/>
 </cross-domain-policy>
 EOF;
-	exit();
+    exit();
 }
 
-$message = $request->send();
+$client = new http\Client();
+$client->enqueue($request)->send();
+$response = new ProxyHttpResponse($client->getResponse(), $request);
+
+$body = $response->getBody();
+$headers = $response->getHeaders();
 
 if (getDownstreamOrigin()) {
-	removeHeaderFromMessage($message, 'Access-Control-Allow-Origin');
-	header('Access-Control-Allow-Origin: ' . getDownstreamOrigin());
-	
-	// See http://stackoverflow.com/questions/12409600/error-request-header-field-content-type-is-not-allowed-by-access-control-allow.
-	removeHeaderFromMessage($message, 'Access-Control-Allow-Headers');
-	header(
-		'Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
+    $headers['Access-Control-Allow-Origin'] = getDownstreamOrigin();
+    
+    // See http://stackoverflow.com/questions/12409600/error-request-header-field-content-type-is-not-allowed-by-access-control-allow.
+    $headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
 }
 
-foreach ($message->getHeaders() as $key => $values) {
-	if (! is_array(($values))) {
-		$values = array(
-			$values
-		);
-	}
-	
-	foreach ($values as $i => $value) {
-		header($key . ': ' . $value, ($i == 0));
-	}
+foreach ($response->getHeaders() as $key => $values) {
+    if (! is_array(($values))) {
+        $values = array(
+            $values
+        );
+    }
+    
+    foreach ($values as $i => $value) {
+        header($key . ': ' . $value, ($i == 0));
+    }
 }
 
-print $message->getBody();
+print $body;

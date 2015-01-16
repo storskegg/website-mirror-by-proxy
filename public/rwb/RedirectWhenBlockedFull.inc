@@ -1,5 +1,6 @@
 <?php
 require 'multibyte.inc';
+require 'rwb.appcache.functions.inc';
 
 class RedirectWhenBlockedFull
 {

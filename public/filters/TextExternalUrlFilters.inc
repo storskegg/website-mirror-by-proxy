@@ -41,9 +41,9 @@ class TextExternalUrlFilters
 			// JSON-type data may be embedded in JavaScript and HTML as well.
 			if (in_array($content_type, 
 				array(
-					ProxyHttpRequest::CONTENT_TYPE_JAVASCRIPT,
-					ProxyHttpRequest::CONTENT_TYPE_JSON,
-					ProxyHttpRequest::CONTENT_TYPE_TEXT_HTML
+				    ProxyHttpResponse::CONTENT_TYPE_JAVASCRIPT,
+					ProxyHttpResponse::CONTENT_TYPE_JSON,
+					ProxyHttpResponse::CONTENT_TYPE_TEXT_HTML
 				))) {
 				
 				$searches2 = array();
@@ -55,7 +55,7 @@ class TextExternalUrlFilters
 				}
 				
 				// For pure JSON content, use these searches only.
-				if ($content_type == ProxyHttpRequest::CONTENT_TYPE_JSON) {
+				if ($content_type == ProxyHttpResponse::CONTENT_TYPE_JSON) {
 					$searches = $searches2;
 				} 				
 
@@ -68,8 +68,8 @@ class TextExternalUrlFilters
 			// Special for javascript (and HTML since it could be in a script tag).
 			if (in_array($content_type, 
 				array(
-					ProxyHttpRequest::CONTENT_TYPE_JAVASCRIPT,
-					ProxyHttpRequest::CONTENT_TYPE_TEXT_HTML
+					ProxyHttpResponse::CONTENT_TYPE_JAVASCRIPT,
+					ProxyHttpResponse::CONTENT_TYPE_TEXT_HTML
 				))) {
 				foreach (array(
 					"'",

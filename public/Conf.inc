@@ -17,6 +17,10 @@ class Conf
 	public static $html_body_appendix = '';
 
 	public static $html_head_appendix = '';
+	
+	public static $proxy_http_request_timeout = 30;
+	
+	public static $proxy_http_request_connecttimeout = 20;
 
 	public static function appendToHtmlBody($str)
 	{
