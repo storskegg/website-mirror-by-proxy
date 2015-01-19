@@ -14,8 +14,9 @@ class ProxyHttpResponse
     private $body, $headers, $response_code;
 
     private $request;
-    
-    public function __construct(http\Client\Response $response, ProxyHttpRequest $request)
+
+    public function __construct(http\Client\Response $response, 
+        ProxyHttpRequest $request)
     {
         $this->body = $response->getBody()->toString();
         $this->headers = $response->getHeaders();
@@ -40,7 +41,8 @@ class ProxyHttpResponse
                 $apply_filters = true;
                 
                 $url_path_depth = count(
-                    explode('/', trim($this->request->getUrlComponent('path'), '/'))) - 1;
+                    explode('/', 
+                        trim($this->request->getUrlComponent('path'), '/'))) - 1;
                 if ($url_path_depth) {
                     $css_base_url = str_repeat('../', $url_path_depth);
                 } else {
@@ -66,15 +68,13 @@ class ProxyHttpResponse
                 
                 foreach ($dom->find('head title') as $title_element) {
                     $title = mb_convert_encoding_plus($title_element->text(), 
-                        'UTF-8', 
-                        $this->getCharsetFromHeadersOrDom($dom));
+                        'UTF-8', $this->getCharsetFromHeadersOrDom($dom));
                     if ($title) {
                         $title .= ' | 免翻墙镜像';
                         
                         // Update title in DOM.
                         $title_element->innertext = mb_convert_encoding_plus(
-                            $title, 
-                            $this->getCharsetFromHeadersOrDom($dom), 
+                            $title, $this->getCharsetFromHeadersOrDom($dom), 
                             'UTF-8');
                         break;
                     }
@@ -193,15 +193,30 @@ class ProxyHttpResponse
         
         // Rewrite set-cookie headers.
         if (isset($headers['Set-Cookie'])) {
-            $headers['Set-Cookie'] = $this->getFilteredSetCookie(
-                $headers['Set-Cookie']);
+            if (is_array($headers['Set-Cookie'])) {
+                foreach ($headers['Set-Cookie'] as &$set_cookie) {
+                    $set_cookie = $this->getFilteredSetCookie($set_cookie);
+                }
+            } else {
+                $headers['Set-Cookie'] = $this->getFilteredSetCookie(
+                    $headers['Set-Cookie']);
+            }
+        }
+        
+        // Unset some.
+        $skip = array('Connection', 'Transfer-Encoding');
+        foreach($skip as $s) {
+            if(isset($headers[$s])) {
+                unset($headers[$s]);
+            }
         }
         
         return $headers;
     }
-    
-    public function getResponseCode() {
-    	return $this->response_code;
+
+    public function getResponseCode()
+    {
+        return $this->response_code;
     }
 
     private function getCharsetFromHeadersOrDom(simple_html_dom $dom)

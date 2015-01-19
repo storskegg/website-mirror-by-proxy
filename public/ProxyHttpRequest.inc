@@ -16,8 +16,6 @@ class ProxyHttpRequest extends http\Client\Request
                 'timeout' => Conf::$proxy_http_request_timeout,
                 'connecttimeout' => Conf::$proxy_http_request_connecttimeout
             ]);
-
-        
     }
 
     public function getUrl()
