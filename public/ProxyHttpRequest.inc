@@ -35,7 +35,7 @@ class ProxyHttpRequest extends http\Client\Request
                 }
                 
                 // Use in DomUtlFilters for relative URLs.
-                $base_url_suffix = http_build_scheme_host_directory($url) . '/';
+                $base_url_suffix = rtrim(http_build_scheme_host($url), '/') . '/';
                 RedirectWhenBlockedFull::setBaseUrlSuffix($base_url_suffix);
             } else {
                 
