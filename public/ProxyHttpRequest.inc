@@ -13,8 +13,10 @@ class ProxyHttpRequest extends http\Client\Request
         
         $this->setOptions(
             [
-                'timeout' => Conf::$proxy_http_request_timeout,
-                'connecttimeout' => Conf::$proxy_http_request_connecttimeout
+                'connecttimeout' => Conf::$proxy_http_request_connecttimeout,
+                'dns_cache_timeout' => Conf::$proxy_http_request_dns_cache_timeout,
+                'retrycount' => Conf::$proxy_http_request_retrycount,
+                'timeout' => Conf::$proxy_http_request_timeout
             ]);
     }
 
@@ -31,6 +33,17 @@ class ProxyHttpRequest extends http\Client\Request
                 
                 if (! TextExternalUrlFilters::matchesUrl($url)) {
                     header('HTTP/1.0 403 Forbidden');
+                    exit();
+                }
+                
+                // If we for some reason have the default upstream host in the URL, remove it.
+                $url_components = parse_url($url);
+                if ($url_components['host'] ==
+                     Conf::getDefaultUpstreamBaseUrlComponent('host')) {
+                    $new_url = http_build_path_query_fragment($url_components);
+                    $new_url = RedirectWhenBlockedFull::getBaseUrl() .
+                         ltrim($new_url, '/');
+                    header('Location: ' . $new_url);
                     exit();
                 }
                 

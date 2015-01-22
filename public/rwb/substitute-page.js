@@ -11,7 +11,10 @@ function iframeLoaded($iframe) {
 
 	manageIframe($iframe);
 	setInterval(function() {
-		manageIframe($iframe);
+		try {
+			manageIframe($iframe);
+		} catch (err) {
+		}
 	}, 1000);
 }
 
@@ -29,7 +32,7 @@ function manageIframe($iframe) {
 	}
 
 	var targetHeight = $(window).height();
-	if($iframe[0].contentWindow.window.document.body != null) {
+	if($iframe[0].contentWindow.window != null && $iframe[0].contentWindow.window.document.body != null) {
 		targetHeight = Math.max(
 				targetHeight,
 				$iframe[0].contentWindow.window.document.body.scrollHeight

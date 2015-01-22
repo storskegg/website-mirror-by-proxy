@@ -6,8 +6,8 @@ require 'main.inc';
 // Send this early, to prevent caching error pages for longer than the duration.
 header('Cache-Control: max-age=' . Conf::$default_cache_control_max_age);
 
-Log::add($_SERVER);
-Log::add(new Conf());
+Log::add($_SERVER, '$_SERVER');
+Log::add(new Conf(), 'Conf');
 
 if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME]) && $_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
      Conf::OUTPUT_TYPE_ALT_BASE_URLS) {
@@ -26,7 +26,6 @@ if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME]) && $_GET[Redi
 }
 
 $request = new ProxyHttpRequest();
-Log::add($request);
 
 // Hijack crossdomain.xml.
 if ($request->getUrlComponent('path') == '/crossdomain.xml' &&
@@ -46,6 +45,13 @@ EOF;
 }
 
 $client = new http\Client();
+$client->setOptions(
+    [
+        'connecttimeout' => Conf::$proxy_http_request_connecttimeout,
+        'dns_cache_timeout' => Conf::$proxy_http_request_dns_cache_timeout,
+        'retrycount' => Conf::$proxy_http_request_retrycount,
+        'timeout' => Conf::$proxy_http_request_timeout
+    ]);
 $client->enqueue($request)->send();
 $response = new ProxyHttpResponse($client->getResponse(), $request);
 
@@ -59,7 +65,7 @@ if (getDownstreamOrigin()) {
     $headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
 }
 
-foreach ($response->getHeaders() as $key => $values) {
+foreach ($headers as $key => $values) {
     if (! is_array(($values))) {
         $values = array(
             $values

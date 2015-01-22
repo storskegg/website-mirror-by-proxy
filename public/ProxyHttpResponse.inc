@@ -98,7 +98,7 @@ class ProxyHttpResponse
                     }
                 }
                 
-                DomUrlFilters::applyAll($dom);
+                DomUrlFilters::applyAll($dom, $this->request);
                 
                 foreach ($dom->find('iframe') as $iframe) {
                     $src = $iframe->getAttribute('src');
@@ -177,6 +177,7 @@ class ProxyHttpResponse
     public function getHeaders()
     {
         $headers = $this->headers;
+        Log::add($headers, 'headers raw');
         
         // If redirect, rewrite Location header.
         if (isset($headers['Location'])) {
@@ -210,6 +211,8 @@ class ProxyHttpResponse
                 unset($headers[$s]);
             }
         }
+        
+        Log::add($headers, 'headers filtered');
         
         return $headers;
     }

@@ -7,13 +7,16 @@ class Log
 
 	private static $content = array();
 
-	public static function add($x)
+	public static function add($x, $tag = '')
 	{
 		if (! self::$enabled) {
 			return;
 		}
 		
 		$a[] = date('Y-m-d H:i:s.u');
+		if($tag) {
+		    $a[] = $tag;
+		}
 		$a[] = 'memory_get_usage: ' . (memory_get_usage() / 1024) . ' kilobytes';
 		$a[] = 'memory_get_peak_usage: ' . (memory_get_peak_usage() / 1024) .
 			 ' kilobytes';
