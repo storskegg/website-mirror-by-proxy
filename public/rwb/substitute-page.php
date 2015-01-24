@@ -31,12 +31,20 @@ if (top != self && window.name == '<?php print self::IFRAME_WINDOW_NAME ?>') {
 	<script
 		src="<?php print $rwb_path_relative_to_request_path ?>/jquery-1.11.1.min.js"></script>
 	<script>
-	window.name = '<?php print self::TOP_WINDOW_NAME ?>';
-	var alt_base_urls = <?php print json_encode(self::$alt_base_urls) ?>;
 	var get_param_name = '<?php print self::QUERY_STRING_PARAM_NAME ?>';
 	var output_type_iframe = '<?php print self::OUTPUT_TYPE_IFRAME ?>';
 	var output_type_jsonp = '<?php print self::OUTPUT_TYPE_JSONP ?>';
-	<?php require 'substitute-page.js'?>
+	if (top != self) {
+		var new_location = window.location.href;
+		new_location += new_location.indexOf('?') == -1 ? '?' : '&';
+		new_location += get_param_name + '=' + output_type_iframe;
+		console.log('changing ' + window.location.href + ' to ' + new_location);
+		window.location = new_location;
+	} else {
+    	window.name = '<?php print self::TOP_WINDOW_NAME ?>';
+    	var alt_base_urls = <?php print json_encode(self::$alt_base_urls) ?>;
+    	<?php print str_replace("\n", "\n\t\t", file_get_contents(__DIR__ . '/substitute-page.js')) . "\n"; ?>
+	}
 	</script>
 </body>
 </html>
