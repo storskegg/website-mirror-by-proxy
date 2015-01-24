@@ -18,7 +18,7 @@ function iframeLoaded($iframe) {
 	}, 1000);
 }
 
-function manageIframe($iframe) {
+function manageIframe($iframe) {	
 	if($iframe.contents().find('title').text()) {
 		document.title = $iframe.contents().find('title').text();
 	}
@@ -49,6 +49,37 @@ function manageIframe($iframe) {
 		$iframe.height(targetHeight + 10);
 	}
 }
+
+function manageOtherIframes($iframes) {
+	$iframes.each(function() {
+		if($(this).attr('name') != $('iframe:first').attr('name')) {
+			var current_location = $(this).contents().get(0).location.href;
+			if(current_location && current_location != window.location.href) {
+				if(current_location.indexOf('about:') == -1) {
+					if(current_location.indexOf(get_param_name + '=' + output_type_iframe) == -1) {
+						var new_location = current_location;
+						new_location += new_location.indexOf('?') == -1 ? '?' : '&';
+						new_location += get_param_name + '=' + output_type_iframe;
+						if($(this).data('new_location') == new_location) {
+							return;
+						}
+						console.log('changing ' + current_location + ' to ' + new_location);
+						$(this).contents().get(0).location = new_location;
+						$(this).data('new_location', new_location);
+					}
+				}
+			}
+		}
+		try {
+			manageOtherIframes($(this).contents().find('iframe'));
+		} catch (error) {
+		}
+	});
+}
+
+setInterval(function() {
+	manageOtherIframes($('iframe'));
+}, 500);
 
 if (!window.console) {
 	console = {	log : function() {}	};

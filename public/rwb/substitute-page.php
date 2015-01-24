@@ -34,6 +34,7 @@ if (top != self && window.name == '<?php print self::IFRAME_WINDOW_NAME ?>') {
 	window.name = '<?php print self::TOP_WINDOW_NAME ?>';
 	var alt_base_urls = <?php print json_encode(self::$alt_base_urls) ?>;
 	var get_param_name = '<?php print self::QUERY_STRING_PARAM_NAME ?>';
+	var output_type_iframe = '<?php print self::OUTPUT_TYPE_IFRAME ?>';
 	var output_type_jsonp = '<?php print self::OUTPUT_TYPE_JSONP ?>';
 	<?php require 'substitute-page.js'?>
 	</script>
