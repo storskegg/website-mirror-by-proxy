@@ -15,4 +15,4 @@ There are many configuration settings, some of which are used by default in the 
 This project could run on older versions of PHP, without the HTTP Extension, by replacing the HttpRequest, HTTPMessage etc with other compatible classes. It could run on servers other than Apache by adapting the .htaccess/rewrite functionality. It could also be wholly ported to a non-PHP environemnt, though such an initiative should probably start by porting redirect-when-blocked itself first.
 
 ## Contributions
-.. are very welcome, as is feedback. Feel free to open issues and to contribute improvements.
+.. are very welcome, as is feedback. Feel free to open issues and to contribute improvements. 我们正在招聘开发者来改进此项目，具体请见 https://github.com/greatfire/wiki/wiki#%E6%8B%9B%E8%81%98
