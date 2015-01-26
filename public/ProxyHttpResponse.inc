@@ -61,22 +61,21 @@ class ProxyHttpResponse
                 
                 $dom = str_get_html($this->body, false, false, '', false);
                 
-                // Might be for example JSONP data served with an incorrect header.
-                if (! $dom || ! $dom->find('body')) {
-                    break;
-                }
-                
-                foreach ($dom->find('head title') as $title_element) {
-                    $title = mb_convert_encoding_plus($title_element->text(), 
-                        'UTF-8', $this->getCharsetFromHeadersOrDom($dom));
-                    if ($title) {
-                        $title .= ' | 免翻墙镜像';
-                        
-                        // Update title in DOM.
-                        $title_element->innertext = mb_convert_encoding_plus(
-                            $title, $this->getCharsetFromHeadersOrDom($dom), 
-                            'UTF-8');
-                        break;
+                if ($dom) {
+                    
+                    foreach ($dom->find('head title') as $title_element) {
+                        $title = mb_convert_encoding_plus(
+                            $title_element->text(), 'UTF-8', 
+                            $this->getCharsetFromHeadersOrDom($dom));
+                        if ($title) {
+                            $title .= ' | 免翻墙镜像';
+                            
+                            // Update title in DOM.
+                            $title_element->innertext = mb_convert_encoding_plus(
+                                $title, $this->getCharsetFromHeadersOrDom($dom), 
+                                'UTF-8');
+                            break;
+                        }
                     }
                 }
                 
@@ -96,6 +95,11 @@ class ProxyHttpResponse
                     if (isset($this->headers['Content-Type'])) {
                         unset($this->headers['Content-Type']);
                     }
+                }
+                
+                // Might be for example JSONP data served with an incorrect header.
+                if (! $dom || ! $dom->find('body')) {
+                    break;
                 }
                 
                 DomUrlFilters::applyAll($dom, $this->request);
@@ -205,9 +209,12 @@ class ProxyHttpResponse
         }
         
         // Unset some.
-        $skip = array('Connection', 'Transfer-Encoding');
-        foreach($skip as $s) {
-            if(isset($headers[$s])) {
+        $skip = array(
+            'Connection',
+            'Transfer-Encoding'
+        );
+        foreach ($skip as $s) {
+            if (isset($headers[$s])) {
                 unset($headers[$s]);
             }
         }

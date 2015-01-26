@@ -1,8 +1,12 @@
+var done = false;
+
 function iframeLoaded($iframe) {
 	if($iframe.data('hasLoaded') === true) {
 		console.log('iframe already loaded');
 		return;
 	}
+	
+	done = true;
 	
 	console.log('iframe loaded');
 	$iframe.data('hasLoaded', true);
@@ -50,22 +54,6 @@ function manageIframe($iframe) {
 	}
 }
 
-function manageOtherIframes($iframes) {
-	$iframes.each(function() {
-		if($(this).attr('name') != $('iframe:first').attr('name')) {
-			$(this).remove();
-		}
-		try {
-			manageOtherIframes($(this).contents().find('iframe'));
-		} catch (error) {
-		}
-	});
-}
-
-setInterval(function() {
-	manageOtherIframes($('iframe'));
-}, 500);
-
 if (!window.console) {
 	console = {	log : function() {}	};
 }
@@ -94,8 +82,6 @@ var ifrInt = setInterval(function() {
 		clearInterval(ifrInt);
 	}
 }, 300);
-
-var done = false;
 
 setTimeout(function() {
 	if(!done) {

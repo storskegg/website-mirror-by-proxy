@@ -132,7 +132,7 @@ class RedirectWhenBlockedFull
 			$iframe_src .= self::QUERY_STRING_PARAM_NAME . '=' .
 				 self::OUTPUT_TYPE_IFRAME;
 			
-			$request_path_depth = count(explode('/', $_SERVER['REQUEST_URI']));
+			$request_path_depth = count(explode('/', parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)));
 			$script_path_depth = count(explode('/', $_SERVER['SCRIPT_NAME']));
 			$rwb_path_relative_to_request_path = str_repeat('../', 
 				$request_path_depth - $script_path_depth) . 'rwb';
@@ -163,7 +163,12 @@ class RedirectWhenBlockedFull
 					// Varieties of head tag. Some sites use the second version...
 					$head_tags = array(
 						'<head>',
-						'<head >'
+						'<head >',
+					    
+					    // If no head tag, insert after body tag instead. Yes, this means the HTML is invalid. But
+					    // adding a head tag to the body segment works too.
+						'<body>',
+						'<body >'
 					);
 					
 					foreach ($head_tags as $head_tag) {
