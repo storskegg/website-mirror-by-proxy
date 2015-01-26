@@ -55,18 +55,22 @@ class RedirectWhenBlockedFull
             $candidates[] = $_SERVER['HTTP_REFERER'];
         }
         
+        // Default fallback.
+        $base_url = self::$alt_base_urls[0];
+        
         foreach ($candidates as $candidate) {
             foreach (self::$alt_base_urls as $alt_base_url) {
                 if ($candidate && self::startsWith($candidate, $alt_base_url)) {
-                    if($append_suffix) {
-                        $alt_base_url .= self::$base_url_suffix;
-                    }
-                    return $alt_base_url;
+                    $base_url = $alt_base_url;
                 }
             }
         }
         
-        return self::$alt_base_urls[0];
+        if ($append_suffix) {
+            $base_url .= self::$base_url_suffix;
+        }
+        
+        return $base_url;
     }
 
     public static function getOutputType()
