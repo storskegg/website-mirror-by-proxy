@@ -9,8 +9,7 @@ header('Cache-Control: max-age=' . Conf::$default_cache_control_max_age);
 Log::add($_SERVER, '$_SERVER');
 Log::add(new Conf(), 'Conf');
 
-if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME]) && $_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
-     Conf::OUTPUT_TYPE_ALT_BASE_URLS) {
+if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME])) {
     
     // Key cannot be empty.
     if (Conf::$alt_base_urls_key) {
@@ -18,9 +17,26 @@ if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME]) && $_GET[Redi
         // Verify key. Set this in conf-local.inc.
         if (isset($_GET['key']) && $_GET['key'] == Conf::$alt_base_urls_key) {
             
-            header('Content-Type: application/javascript');
-            print json_encode(RedirectWhenBlockedFull::getAltBaseUrls());
-            exit();
+            if ($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
+                 Conf::OUTPUT_TYPE_ALT_BASE_URLS) {
+                header('Content-Type: application/javascript');
+                print json_encode(RedirectWhenBlockedFull::getAltBaseUrls());
+                exit();
+            }
+            
+            if ($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
+                 Conf::OUTPUT_TYPE_APK_URLS) {
+                header('Content-Type: application/javascript');
+                $urls = array();
+                foreach (RedirectWhenBlockedFull::getAltBaseUrls() as $url) {
+                    $url .= '?' .
+                         RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME . '=' .
+                         Conf::OUTPUT_TYPE_APK;
+                    $urls[] = $url;
+                }
+                print json_encode($urls);
+                exit();
+            }
         }
     }
 }
