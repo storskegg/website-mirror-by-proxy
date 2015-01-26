@@ -10,14 +10,16 @@ class DomUrlFilters
         self::$attributes[$attribute] = $element;
     }
 
-    public static function applyAll(simple_html_dom $dom, ProxyHttpRequest $request)
+    public static function applyAll(simple_html_dom $dom, 
+        ProxyHttpRequest $request)
     {
         foreach (self::$attributes as $attribute => $elements) {
             self::apply($dom, $attribute, $elements, $request);
         }
     }
 
-    private static function apply(simple_html_dom $dom, $attribute, $elements, ProxyHttpRequest $request)
+    private static function apply(simple_html_dom $dom, $attribute, $elements, 
+        ProxyHttpRequest $request)
     {
         foreach ($dom->find($elements . '[' . $attribute . ']') as $element) {
             $attr_val = $element->getAttribute($attribute);
@@ -37,8 +39,7 @@ class DomUrlFilters
                     if (isset($attr_val_components['path'])) {
                         
                         // Remove current host.
-                        if (isset($attr_val_components['host']) &&
-                             $attr_val_components['host'] ==
+                        if (isset($attr_val_components['host']) && $attr_val_components['host'] ==
                              $request->getUrlComponent('host')) {
                             unset($attr_val_components['host']);
                         }
@@ -46,9 +47,10 @@ class DomUrlFilters
                         // If URL without host.
                         if (! isset($attr_val_components['host'])) {
                             
-                            // Ensure path starts with a slash.
+                            // If path does not start with a slash, prepend current path directory.
                             if ($attr_val_components['path'][0] != '/') {
-                                $attr_val_components['path'] = '/' .
+                                $attr_val_components['path'] = dirname(
+                                    $request->getUrlComponent('path')) . '/' .
                                      $attr_val_components['path'];
                             }
                             
