@@ -7,7 +7,6 @@ require 'main.inc';
 header('Cache-Control: max-age=' . Conf::$default_cache_control_max_age);
 
 Log::add($_SERVER, '$_SERVER');
-Log::add(new Conf(), 'Conf');
 
 if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME])) {
     

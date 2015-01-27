@@ -25,6 +25,14 @@ class DomUrlFilters
             $attr_val = $element->getAttribute($attribute);
             if ($attr_val) {
                 
+                // Ignore these links.
+                if (startsWith($attr_val, array(
+                    'javascript:',
+                    'mailto:'
+                ))) {
+                    continue;
+                }
+                
                 // Turn protocol relative URLs into HTTPS.
                 if (isset($attr_val[1]) && $attr_val[1] == '/' &&
                      $attr_val[0] == '/') {

@@ -17,6 +17,9 @@ class Conf
     public static $default_cache_control_max_age = 60;
 
     public static $default_upstream_base_url;
+    
+    // This should only be used if upstream server isn't configured correctly. Will override server responses.
+    public static $default_upstream_charset;
 
     public static $default_upstream_url;
 
@@ -57,11 +60,5 @@ class Conf
             $components = parse_url(self::$default_upstream_base_url);
         }
         return $components;
-    }
-
-    public function __toString()
-    {
-        $class = new ReflectionClass(__CLASS__);
-        return print_r($class->getStaticProperties(), true);
     }
 }

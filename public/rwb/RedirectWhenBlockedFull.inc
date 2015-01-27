@@ -1,6 +1,7 @@
 <?php
 require 'multibyte.inc';
 require 'rwb.appcache.functions.inc';
+require 'string.inc';
 
 class RedirectWhenBlockedFull
 {
@@ -36,6 +37,12 @@ class RedirectWhenBlockedFull
     {
         return self::$alt_base_urls;
     }
+
+    public static function getBaseTag()
+    {
+        return '<base href="' . RedirectWhenBlockedFull::getBaseUrl(true) .
+             '" target="' . self::TOP_WINDOW_NAME . '">';
+    }
     
     // Guess the current base URL.
     public static function getBaseUrl($append_suffix = false)
@@ -60,7 +67,7 @@ class RedirectWhenBlockedFull
         
         foreach ($candidates as $candidate) {
             foreach (self::$alt_base_urls as $alt_base_url) {
-                if ($candidate && self::startsWith($candidate, $alt_base_url)) {
+                if ($candidate && startsWith($candidate, $alt_base_url)) {
                     $base_url = $alt_base_url;
                 }
             }
@@ -119,6 +126,42 @@ class RedirectWhenBlockedFull
         
         return $uri;
     }
+
+    public static function injectBaseTag(&$html)
+    {
+        
+        // Insert base tag, unless there already is one.
+        if (stripos($html, '<base') === false) {
+            
+            $base_tag = self::getBaseTag();
+            
+            // Varieties of head tag. Some sites use the second version...
+            $head_tags = array(
+                '<head>',
+                '<head >',
+                
+                // If no head tag, insert after body tag instead. Yes, this means the HTML is invalid. But
+                // adding a head tag to the body segment works too.
+                '<body>',
+                '<body >'
+            );
+            
+            $base_tag_injected = false;
+            foreach ($head_tags as $head_tag) {
+                $html = str_replace($head_tag, $head_tag . $base_tag, $html, 
+                    $count);
+                if ($count > 0) {
+                    $base_tag_injected = true;
+                    break;
+                }
+            }
+            
+            // For even more invalid HTML (no head tag, no body tag), just append base tag to start of doc.
+            if (! $base_tag_injected) {
+                $html = $base_tag . "\n" . $html;
+            }
+        }
+    }
     
     // Main activity.
     public static function run()
@@ -165,31 +208,7 @@ class RedirectWhenBlockedFull
                 
                 $html = ob_get_clean();
                 
-                // Insert base tag, unless there already is one.
-                if (stripos($html, '<base') === false) {
-                    
-                    // Varieties of head tag. Some sites use the second version...
-                    $head_tags = array(
-                        '<head>',
-                        '<head >',
-                        
-                        // If no head tag, insert after body tag instead. Yes, this means the HTML is invalid. But
-                        // adding a head tag to the body segment works too.
-                        '<body>',
-                        '<body >'
-                    );
-                    
-                    foreach ($head_tags as $head_tag) {
-                        $html = str_replace($head_tag, 
-                            $head_tag . '<base href="' .
-                                 RedirectWhenBlockedFull::getBaseUrl(true) .
-                                 '" target="' . self::TOP_WINDOW_NAME . '">', 
-                                $html, $count);
-                        if ($count > 0) {
-                            break;
-                        }
-                    }
-                }
+                RedirectWhenBlockedFull::injectBaseTag($html);
                 
                 /*
                  * This request comes from another base url (mirror or source host).
@@ -234,25 +253,5 @@ class RedirectWhenBlockedFull
     public static function setWebsiteTitle($website_title)
     {
         self::$website_title = $website_title;
-    }
-    
-    // Helper function which doesn't obviously belong in this class, but is
-    // very useful.
-    public static function startsWith($str, $needle)
-    {
-        if (is_array($needle)) {
-            foreach ($needle as $n) {
-                if (startsWith($str, $n)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-        if (strlen($needle) > strlen($str)) {
-            return false;
-        }
-        
-        return strcasecmp(substr($str, 0, strlen($needle)), $needle) === 0;
     }
 }

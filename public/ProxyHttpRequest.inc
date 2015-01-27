@@ -5,10 +5,26 @@ class ProxyHttpRequest extends http\Client\Request
 
     public function __construct()
     {
-        parent::__construct($_SERVER['REQUEST_METHOD'], $this->getUrl());
+        parent::__construct($_SERVER['REQUEST_METHOD'], $this->getUrl(), 
+            $this->getHeaders());
         
         if (isset($_POST)) {
-            parent::getBody()->addForm($_POST);
+            
+            $post_data = $_POST;
+            
+            // If charset specified, convert back to upstream charset before adding.
+            if (Conf::$default_upstream_charset) {
+                array_walk($post_data, 
+                    function (&$value)
+                    {
+                        $value = mb_convert_encoding($value, 
+                            Conf::$default_upstream_charset, 'utf-8');
+                    });
+            }
+            
+            $this->getBody()->append(new http\QueryString($post_data));
+            
+            Log::add($post_data, 'post_data');
         }
         
         $this->setOptions(
@@ -18,6 +34,30 @@ class ProxyHttpRequest extends http\Client\Request
                 'retrycount' => Conf::$proxy_http_request_retrycount,
                 'timeout' => Conf::$proxy_http_request_timeout
             ]);
+        
+        Log::add($this->__toString(), 'ProxyHttpRequest->__toString()');
+    }
+
+    public function getHeaders()
+    {
+        $headers = getallheaders();
+        
+        $ignored_headers = array(
+            'Connection',
+            'Content-Length',
+            'Host'
+        );
+        foreach ($ignored_headers as $ignored_header) {
+            if (isset($headers[$ignored_header])) {
+                unset($headers[$ignored_header]);
+            }
+        }
+        
+        foreach ($headers as $key => &$value) {
+            TextExternalUrlFilters::applyReverse($value);
+        }
+        
+        return $headers;
     }
 
     public function getUrl()
@@ -25,7 +65,7 @@ class ProxyHttpRequest extends http\Client\Request
         static $url;
         if (! isset($url)) {
             
-            if ($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
+            if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME]) && $_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
                  Conf::OUTPUT_TYPE_APK && Conf::$apk_url) {
                 
                 $url = Conf::$apk_url;
@@ -43,8 +83,8 @@ class ProxyHttpRequest extends http\Client\Request
                 $url = RedirectWhenBlockedFull::getRequestUriWithoutQueryStringParam();
                 $this->removeThisScriptDirFromUrl($url);
                 
-                if (RedirectWhenBlockedFull::startsWith($url, '/http://') ||
-                     RedirectWhenBlockedFull::startsWith($url, '/https://')) {
+                if (startsWith($url, '/http://') || startsWith($url, 
+                    '/https://')) {
                     $url = substr($url, 1);
                     
                     if (! TextExternalUrlFilters::matchesUrl($url)) {
@@ -82,6 +122,7 @@ class ProxyHttpRequest extends http\Client\Request
         
         // Reverse rewrites of parameters inside URL.
         TextExternalUrlFilters::applyReverse($url);
+        Log::add($url, 'url');
         return $url;
     }
 
@@ -102,7 +143,7 @@ class ProxyHttpRequest extends http\Client\Request
         return $components;
     }
 
-    private static function removeThisScriptDirFromUrl(&$url)
+    private function removeThisScriptDirFromUrl(&$url)
     {
         $this_script_dir = dirname($_SERVER['SCRIPT_NAME']);
         if ($this_script_dir != '/' &&
