@@ -129,7 +129,6 @@ class RedirectWhenBlockedFull
 
     public static function injectBaseTag(&$html)
     {
-        
         // Insert base tag, unless there already is one.
         if (stripos($html, '<base') === false) {
             

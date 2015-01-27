@@ -179,7 +179,7 @@ class ProxyHttpResponse
                     if (isset($this->headers['Content-Type'])) {
                         unset($this->headers['Content-Type']);
                     }
-                } else {
+                } elseif($dom) {
                     
                     $html = $dom->__toString();
                     RedirectWhenBlockedFull::injectBaseTag($html);
