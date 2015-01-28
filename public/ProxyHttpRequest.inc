@@ -45,12 +45,25 @@ class ProxyHttpRequest extends http\Client\Request
         $ignored_headers = array(
             'Connection',
             'Content-Length',
-            'Host'
+            'Fastly-Client',
+            'Fastly-Client-IP',
+            'Fastly-FF',
+            'Fastly-Orig-Host',
+            'Fastly-SSL',
+            'Host',
+            'X-Forwarded-Host',
+            'X-Forwarded-Server',
+            'X-Varnish'
         );
         foreach ($ignored_headers as $ignored_header) {
             if (isset($headers[$ignored_header])) {
                 unset($headers[$ignored_header]);
             }
+            
+            $ignored_header_alt = strtolower($ignored_header);
+            if (isset($headers[$ignored_header_alt])) {
+                unset($headers[$ignored_header_alt]);
+            }            
         }
         
         foreach ($headers as $key => &$value) {
