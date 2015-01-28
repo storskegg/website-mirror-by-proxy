@@ -34,8 +34,6 @@ class Log
 
 	public static function shutdown()
 	{
-		self::add('shutdown');
-		
 		$fh = self::getFileHandle();
 		if (is_resource($fh)) {
 			fwrite($fh, implode("\n------------\n", self::$content));

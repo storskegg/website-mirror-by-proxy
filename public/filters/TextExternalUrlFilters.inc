@@ -7,8 +7,8 @@ class TextExternalUrlFilters
 
     public static function addHost($host)
     {
-        if (! isset(self::$hosts[$host])) {
-            self::$hosts[$host] = array();
+        if (! in_array($host, self::$hosts)) {
+            self::$hosts[] = $host;
         }
     }
 
@@ -21,7 +21,7 @@ class TextExternalUrlFilters
 
     public static function applyAll(&$body, $content_type = NULL)
     {
-        foreach (self::$hosts as $host => $patterns) {
+        foreach (self::getHostsFiltered() as $host) {
             
             $searches = array();
             
@@ -101,7 +101,7 @@ class TextExternalUrlFilters
                 $alt_base_url . 'https://' => 'https://',
                 $alt_base_url => Conf::getDefaultUpstreamBaseUrlComponent(
                     'scheme') . '://' .
-                     Conf::getDefaultUpstreamBaseUrlComponent('host')
+                     Conf::getDefaultUpstreamBaseUrlComponent('host') . '/'
             );
             
             // Add url-encoded versions.
@@ -117,8 +117,8 @@ class TextExternalUrlFilters
             foreach ($searches as $search => $replace) {
                 $search = str_replace('://', urlencode(':') . '//', $search);
                 if (! isset($searches[$search])) {
-                    $searches[$search] = str_replace('://', urlencode(':') . '//', 
-                        $replace);
+                    $searches[$search] = str_replace('://', 
+                        urlencode(':') . '//', $replace);
                 }
             }
             
@@ -131,7 +131,7 @@ class TextExternalUrlFilters
     public static function matchesUrl($url)
     {
         $host = parse_url($url, PHP_URL_HOST);
-        if (in_array($host, array_keys(self::$hosts))) {
+        if (in_array($host, self::$hosts)) {
             return true;
         }
     }
@@ -148,5 +148,25 @@ class TextExternalUrlFilters
             }
         }
         return $host_and_path;
+    }
+
+    // Remove hosts which start with other hosts (eg remove google.com.hk if google.com is in the list).
+    // Otherwise some hosts may be replaced twice.
+    private static function getHostsFiltered()
+    {
+        static $filtered_hosts;
+        if (! isset($filtered_hosts)) {
+            $filtered_hosts = array();
+            sort(self::$hosts);
+            foreach (self::$hosts as $host) {
+                foreach ($filtered_hosts as $filtered_host) {
+                    if (startsWith($host, $filtered_host)) {
+                        continue 2;
+                    }
+                }
+                $filtered_hosts[] = $host;
+            }
+        }
+        return $filtered_hosts;
     }
 }

@@ -80,6 +80,7 @@ if (getDownstreamOrigin()) {
     $headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
 }
 
+header($response->getResponseInfo());
 foreach ($headers as $key => $values) {
     if (! is_array(($values))) {
         $values = array(

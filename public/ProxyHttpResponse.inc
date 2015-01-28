@@ -11,9 +11,9 @@ class ProxyHttpResponse
 
     const CONTENT_TYPE_JSON = 4;
 
-    private $body, $headers, $response_code;
+    private $body, $headers, $response_code, $response_info;
 
-    private $request;
+    private $response, $request;
 
     public function __construct(http\Client\Response $response, 
         ProxyHttpRequest $request)
@@ -21,7 +21,9 @@ class ProxyHttpResponse
         $this->body = $response->getBody()->toString();
         $this->headers = $response->getHeaders();
         $this->response_code = $response->getResponseCode();
+        $this->response_info = $response->getInfo();
         
+        $this->response = $response;
         $this->request = $request;
     }
 
@@ -48,7 +50,8 @@ class ProxyHttpResponse
                     unset($this->headers['Content-Length']);
                 }
                 
-                Log::add($body);
+                Log::add($this->response->__toString(), 
+                    '$this->response->__toString()');
                 break;
         }
         
@@ -113,6 +116,11 @@ class ProxyHttpResponse
         return $this->response_code;
     }
 
+    public function getResponseInfo()
+    {
+        return $this->response_info;
+    }
+
     private function destroyDom(&$dom)
     {
         $dom->clear();
@@ -133,9 +141,18 @@ class ProxyHttpResponse
                 } else {
                     $css_base_url = './';
                 }
-                $body = str_replace('url("../', 'url("' . $css_base_url . '../', $body);
-                $body = str_replace('url(\'../', 'url(\'' . $css_base_url . '../', $body);
-                $body = str_replace('url(../', 'url(' . $css_base_url . '../', $body);
+                
+                // Convert protocol relative URLs to HTTPS.
+                $body = str_replace('url(//', 'url(https://', $body);
+                $body = str_replace('url("//', 'url("https://', $body);
+                $body = str_replace('url(\'//', 'url(\'https://', $body);
+                
+                $body = str_replace('url("../', 'url("' . $css_base_url . '../', 
+                    $body);
+                $body = str_replace('url(\'../', 
+                    'url(\'' . $css_base_url . '../', $body);
+                $body = str_replace('url(../', 'url(' . $css_base_url . '../', 
+                    $body);
                 $body = str_replace('url("/', 'url("' . $css_base_url, $body);
                 $body = str_replace('url(\'/', 'url(\'' . $css_base_url, $body);
                 $body = str_replace('url(/', 'url(' . $css_base_url, $body);
@@ -168,18 +185,39 @@ class ProxyHttpResponse
                     $title = '免翻墙镜像';
                 }
                 
+                // Special - override meta redirects since RWB would just slow them down.
+                if ($dom && count($dom->find('<META[http-equiv=refresh]'))) {
+                    foreach ($dom->find('<META[http-equiv=refresh]') as $meta) {
+                        $content = $meta->getAttribute('content');
+                        if ($content) {
+                            $content_chunks = explode(';', $content, 2);
+                            if (isset($content_chunks[1])) {
+                                $url_chunks = explode('=', $content_chunks[1], 
+                                    2);
+                                if (isset($url_chunks[1])) {
+                                    $url = trim($url_chunks[1], '\'" ');
+                                    if ($url) {
+                                        $this->headers['Location'] = $url;
+                                        return '';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 // Only apply RWB if response is 200 and request method is GET.
-                if ($this->getResponseCode() == 200 && $_SERVER['REQUEST_METHOD'] == 'GET') {
+                if ($this->getResponseCode() == 200 &&
+                     $_SERVER['REQUEST_METHOD'] == 'GET') {
                     
                     RedirectWhenBlockedFull::setWebsiteTitle($title);
                     RedirectWhenBlockedFull::run();
                     
                     // RWB will turn output into JSONP. Remove content-type header to keep header sent by RWB.
-                    $headers = $this->getHeaders();
                     if (isset($this->headers['Content-Type'])) {
                         unset($this->headers['Content-Type']);
                     }
-                } elseif($dom) {
+                } elseif ($dom) {
                     
                     $html = $dom->__toString();
                     RedirectWhenBlockedFull::injectBaseTag($html);
@@ -193,7 +231,7 @@ class ProxyHttpResponse
                 }
                 
                 DomUrlFilters::applyAll($dom, $this->request);
-
+                
                 // Special for iframes. Prevent RWB from hijacking content (iframe in iframe problem).
                 foreach ($dom->find('iframe') as $iframe) {
                     $src = $iframe->getAttribute('src');
@@ -203,6 +241,14 @@ class ProxyHttpResponse
                             RedirectWhenBlockedFull::OUTPUT_TYPE_IFRAME);
                         $iframe->setAttribute('src', $src);
                     }
+                }
+                
+                // Special for style attributes - apply CSS filter.
+                foreach ($dom->find('*[style]') as $style_element) {
+                    $style_element->setAttribute('style', 
+                        $this->getBodyFilteredByContentType(
+                            $style_element->getAttribute('style'), 
+                            self::CONTENT_TYPE_TEXT_CSS));
                 }
                 
                 $dom_do_reset = false;
@@ -252,7 +298,6 @@ class ProxyHttpResponse
                         $dom_do_reset = false;
                     }
                     
-                    // Remove 'async' attributes because they break the page in IE11 when loaded in our iframe.
                     foreach ($dom->find('style') as $style) {
                         $style->innertext = $this->getBodyFilteredByContentType(
                             $style->innertext, self::CONTENT_TYPE_TEXT_CSS);
@@ -270,7 +315,7 @@ class ProxyHttpResponse
     private function getCharsetFromHeadersOrDom(simple_html_dom $dom)
     {
         // Allow manually overriding this.
-        if(Conf::$default_upstream_charset) {
+        if (Conf::$default_upstream_charset) {
             return Conf::$default_upstream_charset;
         }
         

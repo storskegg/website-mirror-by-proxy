@@ -27,6 +27,7 @@ class DomUrlFilters
                 
                 // Ignore these links.
                 if (startsWith($attr_val, array(
+                    'data:',
                     'javascript:',
                     'mailto:'
                 ))) {

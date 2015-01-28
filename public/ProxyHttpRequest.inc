@@ -57,6 +57,22 @@ class ProxyHttpRequest extends http\Client\Request
             TextExternalUrlFilters::applyReverse($value);
         }
         
+        // Proxy standard headers.
+        if (! isset($headers['X-Forwarded-For'])) {
+            $headers['X-Forwarded-For'] = $_SERVER['REMOTE_ADDR'];
+        }
+        
+        if (! isset($headers['X-Real-IP'])) {
+            $real_ip = $headers['X-Forwarded-For'];
+            
+            // If multiple (command-separated) forwarded IPs, use the first one.
+            if (strpos($real_ip, ',') !== false) {
+                list ($real_ip) = explode(',', $real_ip);
+            }
+            
+            $headers['X-Real-IP'] = $real_ip;
+        }
+        
         return $headers;
     }
 
@@ -92,10 +108,11 @@ class ProxyHttpRequest extends http\Client\Request
                         exit();
                     }
                     
-                    // If we for some reason have the default upstream host in the URL, remove it.
+                    // If we for some reason have the default upstream host and scheme in the URL, remove them.
                     $url_components = parse_url($url);
                     if ($url_components['host'] ==
-                         Conf::getDefaultUpstreamBaseUrlComponent('host')) {
+                         Conf::getDefaultUpstreamBaseUrlComponent('host') && $url_components['scheme'] ==
+                         Conf::getDefaultUpstreamBaseUrlComponent('scheme')) {
                         $new_url = http_build_path_query_fragment(
                             $url_components);
                         $new_url = RedirectWhenBlockedFull::getBaseUrl() .
