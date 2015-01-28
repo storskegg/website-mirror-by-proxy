@@ -29,7 +29,8 @@ class DomUrlFilters
                 if (startsWith($attr_val, array(
                     'data:',
                     'javascript:',
-                    'mailto:'
+                    'mailto:',
+                    '.'
                 ))) {
                     continue;
                 }

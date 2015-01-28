@@ -83,15 +83,21 @@ class ProxyHttpResponse
             }
         }
         
-        // Rewrite set-cookie headers.
+        // Rewrite set-cookie headers (or remove if cookies disabled).
         if (isset($headers['Set-Cookie'])) {
-            if (is_array($headers['Set-Cookie'])) {
-                foreach ($headers['Set-Cookie'] as &$set_cookie) {
-                    $set_cookie = $this->getFilteredSetCookie($set_cookie);
-                }
+            
+            if (! Conf::$cookies_enabled) {
+                unset($headers['Set-Cookie']);
+                
             } else {
-                $headers['Set-Cookie'] = $this->getFilteredSetCookie(
-                    $headers['Set-Cookie']);
+                if (is_array($headers['Set-Cookie'])) {
+                    foreach ($headers['Set-Cookie'] as &$set_cookie) {
+                        $set_cookie = $this->getFilteredSetCookie($set_cookie);
+                    }
+                } else {
+                    $headers['Set-Cookie'] = $this->getFilteredSetCookie(
+                        $headers['Set-Cookie']);
+                }
             }
         }
         

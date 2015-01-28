@@ -3,7 +3,7 @@
 class TextExternalUrlFilters
 {
 
-    private static $hosts;
+    private static $hosts = array();
 
     public static function addHost($host)
     {

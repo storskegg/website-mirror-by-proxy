@@ -55,6 +55,11 @@ class ProxyHttpRequest extends http\Client\Request
             'X-Forwarded-Server',
             'X-Varnish'
         );
+        
+        if(!Conf::$cookies_enabled) {
+            $ignored_headers[] = 'Cookie';
+        }
+        
         foreach ($ignored_headers as $ignored_header) {
             if (isset($headers[$ignored_header])) {
                 unset($headers[$ignored_header]);

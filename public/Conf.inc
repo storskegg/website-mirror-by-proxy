@@ -13,6 +13,8 @@ class Conf
     public static $alt_base_urls_key;
 
     public static $apk_url;
+    
+    public static $cookies_enabled = false;
 
     public static $default_cache_control_max_age = 60;
 
