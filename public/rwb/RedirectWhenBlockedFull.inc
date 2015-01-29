@@ -14,6 +14,8 @@ class RedirectWhenBlockedFull
     
     // Used to identify main iframe.
     const IFRAME_WINDOW_NAME = 'rwb3498472i';
+    
+    const JSONP_CALLBACK_BASENAME = 'jsonpCallback';
 
     const OUTPUT_TYPE_IFRAME = 1;
 
@@ -217,7 +219,7 @@ class RedirectWhenBlockedFull
                      RedirectWhenBlockedFull::OUTPUT_TYPE_JSONP) {
                     
                     print 
-                        $_GET['callback'] . '(' . json_encode(
+                        self::getJsonpCallbackName() . '(' . json_encode(
                             array(
                                 'html' => utf8_encode_current_charset($html)
                             )) . ');';
@@ -252,5 +254,16 @@ class RedirectWhenBlockedFull
     public static function setWebsiteTitle($website_title)
     {
         self::$website_title = $website_title;
+    }
+    
+    private static function getJsonpCallbackName() {
+        if(isset($_GET['callback'])) {
+            if(preg_match('/^' . self::JSONP_CALLBACK_BASENAME . '\d+$/', $_GET['callback'])) {
+                return $_GET['callback'];
+            }
+        }
+        
+        // callback argument missing or not valid. fallback to default one.
+        return self::JSONP_CALLBACK_BASENAME . '1';
     }
 }

@@ -3,6 +3,10 @@
 class ProxyHttpRequest extends http\Client\Request
 {
 
+    const POST_ENC_TYPE_APPLICATION = 'application/x-www-form-urlencoded';
+
+    const POST_ENC_TYPE_MULTIPART = 'multipart/form-data';
+
     public function __construct()
     {
         parent::__construct($_SERVER['REQUEST_METHOD'], $this->getUrl(), 
@@ -22,7 +26,16 @@ class ProxyHttpRequest extends http\Client\Request
                     });
             }
             
-            $this->getBody()->append(new http\QueryString($post_data));
+            if ($this->getPostEncType() == self::POST_ENC_TYPE_MULTIPART) {
+                
+                // First unset the original content type header. addForm() will automatically add it
+                // with it's own boundary value.
+                $this->setHeader('Content-Type', NULL);
+                
+                $this->getBody()->addForm($_POST);
+            } else {
+                $this->getBody()->append(new http\QueryString($post_data));
+            }
             
             Log::add($post_data, 'post_data');
         }
@@ -56,7 +69,7 @@ class ProxyHttpRequest extends http\Client\Request
             'X-Varnish'
         );
         
-        if(!Conf::$cookies_enabled) {
+        if (! Conf::$cookies_enabled) {
             $ignored_headers[] = 'Cookie';
         }
         
@@ -68,7 +81,7 @@ class ProxyHttpRequest extends http\Client\Request
             $ignored_header_alt = strtolower($ignored_header);
             if (isset($headers[$ignored_header_alt])) {
                 unset($headers[$ignored_header_alt]);
-            }            
+            }
         }
         
         foreach ($headers as $key => &$value) {
@@ -176,6 +189,20 @@ class ProxyHttpRequest extends http\Client\Request
             $components = parse_url($this->getUrl());
         }
         return $components;
+    }
+
+    private function getPostEncType()
+    {
+        $content_type = $this->getHeader('Content-Type');
+        if ($content_type) {
+            list ($enc_type) = explode(';', $content_type);
+            if ($enc_type == self::POST_ENC_TYPE_MULTIPART) {
+                return self::POST_ENC_TYPE_MULTIPART;
+            }
+        }
+        
+        // Default - used in most forms.
+        return self::POST_ENC_TYPE_APPLICATION;
     }
 
     private function removeThisScriptDirFromUrl(&$url)

@@ -117,7 +117,7 @@ for(var i in alt_base_urls) {
 			dataType: 'jsonp',
 			url: alt_url,
 			cache: true,
-			jsonpCallback: 'jsonpCallback' + i
+			jsonpCallback: jsonp_callback_basename + i
 		}).success(function(data) {
 			if(!done && typeof data.html !== 'undefined') {
 				done = true;

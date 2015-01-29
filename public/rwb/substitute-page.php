@@ -32,6 +32,7 @@ if (top != self && window.name == '<?php print self::IFRAME_WINDOW_NAME ?>') {
 		src="<?php print $rwb_path_relative_to_request_path ?>/jquery-1.11.1.min.js"></script>
 	<script>
 	var get_param_name = '<?php print self::QUERY_STRING_PARAM_NAME ?>';
+	var jsonp_callback_basename = '<?php print self::JSONP_CALLBACK_BASENAME ?>';
 	var output_type_iframe = '<?php print self::OUTPUT_TYPE_IFRAME ?>';
 	var output_type_jsonp = '<?php print self::OUTPUT_TYPE_JSONP ?>';
 	if (top != self) {
