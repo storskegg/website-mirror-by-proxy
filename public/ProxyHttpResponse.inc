@@ -45,6 +45,11 @@ class ProxyHttpResponse
                 TextInternalUrlFilters::applyAll($body);
                 TextExternalUrlFilters::applyAll($body, $content_type);
                 
+                // Run this after the global filters above, to avoid rewriting some URLs twice.
+                if($content_type == self::CONTENT_TYPE_TEXT_HTML) {
+                    RedirectWhenBlockedFull::injectBaseTag($body);
+                }
+                
                 // Remove content-length, since this might be different after modification.
                 if (isset($this->headers['Content-Length'])) {
                     unset($this->headers['Content-Length']);
@@ -223,12 +228,6 @@ class ProxyHttpResponse
                     if (isset($this->headers['Content-Type'])) {
                         unset($this->headers['Content-Type']);
                     }
-                } elseif ($dom) {
-                    
-                    $html = $dom->__toString();
-                    RedirectWhenBlockedFull::injectBaseTag($html);
-                    $this->destroyDom($dom);
-                    $dom = $this->getDomFromHtml($html);
                 }
                 
                 // Might be for example JSONP data served with an incorrect header.
