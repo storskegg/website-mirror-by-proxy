@@ -325,7 +325,20 @@ class ProxyHttpResponse
             return Conf::$default_upstream_charset;
         }
         
-        // TODO: get charset from headers.
+        // Get charset from header, if available.
+        $content_type = $this->response->getHeader('Content-Type');
+        if($content_type) {
+            $content_type_chunks = explode(';', $content_type, 2);
+            if(isset($content_type_chunks[1])) {
+                $charset = trim($content_type_chunks[1]);
+                $charset_chunks = explode('=', $charset, 2);
+                if(isset($charset_chunks[1])) {
+                    return $charset_chunks[1];
+                }
+            }
+        }
+        
+        // If no headers, try to find a meta tag.
         foreach ($dom->find('meta[http-equiv=Content-Type]') as $meta) {
             $content = $meta->getAttribute('content');
             if ($content) {
