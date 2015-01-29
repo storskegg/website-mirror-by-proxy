@@ -33,8 +33,9 @@ function mb_supports_encoding($encoding)
 			$encodings[] = strtolower($e);
 		}
 		
-		// Not in list but also supported.
+		// These are listed but under different names. Add the standard names (see https://bugs.php.net/bug.php?id=45086).
 		$encodings[] = 'gbk';
+		$encodings[] = 'gb2312';
 	}
 	
 	$encoding = strtolower($encoding);
