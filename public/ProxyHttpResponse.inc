@@ -46,7 +46,7 @@ class ProxyHttpResponse
                 TextExternalUrlFilters::applyAll($body, $content_type);
                 
                 // Run this after the global filters above, to avoid rewriting some URLs twice.
-                if($content_type == self::CONTENT_TYPE_TEXT_HTML) {
+                if ($content_type == self::CONTENT_TYPE_TEXT_HTML) {
                     RedirectWhenBlockedFull::injectBaseTag($body);
                 }
                 
@@ -93,7 +93,6 @@ class ProxyHttpResponse
             
             if (! Conf::$cookies_enabled) {
                 unset($headers['Set-Cookie']);
-                
             } else {
                 if (is_array($headers['Set-Cookie'])) {
                     foreach ($headers['Set-Cookie'] as &$set_cookie) {
@@ -221,12 +220,21 @@ class ProxyHttpResponse
                 if ($this->getResponseCode() == 200 &&
                      $_SERVER['REQUEST_METHOD'] == 'GET') {
                     
+                    if ($dom) {
+                        RedirectWhenBlockedFull::setCharset(
+                            $this->getCharsetFromHeadersOrDom($dom));
+                    }
+                    
                     RedirectWhenBlockedFull::setWebsiteTitle($title);
                     RedirectWhenBlockedFull::run();
                     
-                    // RWB will turn output into JSONP. Remove content-type header to keep header sent by RWB.
-                    if (isset($this->headers['Content-Type'])) {
-                        unset($this->headers['Content-Type']);
+                    if (RedirectWhenBlockedFull::getOutputType() ==
+                         RedirectWhenBlockedFull::OUTPUT_TYPE_JSONP) {
+                             
+                        // RWB will turn output into JSONP. Remove content-type header to keep header sent by RWB.
+                        if (isset($this->headers['Content-Type'])) {
+                            unset($this->headers['Content-Type']);
+                        }
                     }
                 }
                 
@@ -326,12 +334,12 @@ class ProxyHttpResponse
         
         // Get charset from header, if available.
         $content_type = $this->response->getHeader('Content-Type');
-        if($content_type) {
+        if ($content_type) {
             $content_type_chunks = explode(';', $content_type, 2);
-            if(isset($content_type_chunks[1])) {
+            if (isset($content_type_chunks[1])) {
                 $charset = trim($content_type_chunks[1]);
                 $charset_chunks = explode('=', $charset, 2);
-                if(isset($charset_chunks[1])) {
+                if (isset($charset_chunks[1])) {
                     return $charset_chunks[1];
                 }
             }

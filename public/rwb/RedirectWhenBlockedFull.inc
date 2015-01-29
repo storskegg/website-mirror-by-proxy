@@ -14,7 +14,7 @@ class RedirectWhenBlockedFull
     
     // Used to identify main iframe.
     const IFRAME_WINDOW_NAME = 'rwb3498472i';
-    
+
     const JSONP_CALLBACK_BASENAME = 'jsonpCallback';
 
     const OUTPUT_TYPE_IFRAME = 1;
@@ -28,6 +28,9 @@ class RedirectWhenBlockedFull
     );
 
     private static $alt_base_urls, $alt_url_collections;
+    
+    // Manually set charset.
+    private static $charset;
     
     // If a part of the website uses a separate base URL.
     private static $base_url_suffix = '';
@@ -221,8 +224,10 @@ class RedirectWhenBlockedFull
                     print 
                         self::getJsonpCallbackName() . '(' . json_encode(
                             array(
-                                'html' => utf8_encode_current_charset($html)
-                            )) . ');';
+                                'html' => mb_convert_encoding_plus($html, 
+                                    'UTF-8', 
+                                    RedirectWhenBlockedFull::getCharset($html))
+                            )) . ')';
                 } 
 
                 else {
@@ -234,6 +239,10 @@ class RedirectWhenBlockedFull
     public static function setBaseUrlSuffix($base_url_suffix)
     {
         self::$base_url_suffix = $base_url_suffix;
+    }
+    
+    public static function setCharset($charset) {
+        self::$charset = $charset;
     }
 
     public static function setUrls($alt_base_urls, $alt_url_collections)
@@ -255,10 +264,23 @@ class RedirectWhenBlockedFull
     {
         self::$website_title = $website_title;
     }
-    
-    private static function getJsonpCallbackName() {
-        if(isset($_GET['callback'])) {
-            if(preg_match('/^' . self::JSONP_CALLBACK_BASENAME . '\d+$/', $_GET['callback'])) {
+
+    private static function getCharset($html)
+    {
+        if (isset(self::$charset) && self::$charset) {
+            return self::$charset;
+        }
+        
+        if (preg_match('/charset=([^\'"]+)/', $html, $match)) {
+            return $match[1];
+        }
+    }
+
+    private static function getJsonpCallbackName()
+    {
+        if (isset($_GET['callback'])) {
+            if (preg_match('/^' . self::JSONP_CALLBACK_BASENAME . '\d+$/', 
+                $_GET['callback'])) {
                 return $_GET['callback'];
             }
         }

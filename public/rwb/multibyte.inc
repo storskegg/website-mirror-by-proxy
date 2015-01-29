@@ -44,13 +44,3 @@ function mb_supports_encoding($encoding)
 		return true;
 	}
 }
-
-function utf8_encode_current_charset($str) {
-	// TODO: get from headers_list().
-	
-	if(preg_match('/charset=([^\'"]+)/', $str, $match)) {
-		$str = mb_convert_encoding_plus($str, 'UTF-8', $match[1]);
-	}
-	
-	return $str;
-}
