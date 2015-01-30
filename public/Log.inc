@@ -45,16 +45,16 @@ class Log
 	{
 		static $fh;
 		if (! isset($fh)) {
-			$dir = __DIR__ . '/log';
+			$dir = dirname(__DIR__) . '/log';
 			if (! is_dir($dir)) {
 				mkdir($dir);
-				chmod($dir, 0777);
+				chmod($dir, 0600);
 			}
 			$filename = tempnam($dir, 
 				__CLASS__ . '.' . time() . '.' .
 					 urlencode($_SERVER['SCRIPT_NAME']));
 			touch($filename);
-			chmod($filename, 0777);
+			chmod($filename, 0600);
 			$fh = fopen($filename, 'w');
 		}
 		return $fh;
