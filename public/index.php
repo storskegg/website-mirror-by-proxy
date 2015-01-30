@@ -6,6 +6,16 @@ require 'main.inc';
 // Send this early, to prevent caching error pages for longer than the duration.
 header('Cache-Control: max-age=' . Conf::$default_cache_control_max_age);
 
+// Make sure to send these security headers are included in all responses.
+$required_security_headers['X-Content-Type-Options'] = 'nosniff';
+$required_security_headers['X-Download-Options'] = 'noopen';
+$required_security_headers['X-Frame-Options'] = 'sameorigin';
+$required_security_headers['X-XSS-Protection'] = '1; mode=block';
+$required_security_headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubdomains';
+foreach ($required_security_headers as $key => $value) {
+    header($key . ': ' . $value);
+}
+
 Log::add($_SERVER, '$_SERVER');
 
 if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME])) {
@@ -82,6 +92,12 @@ if (getDownstreamOrigin()) {
 
 header($response->getResponseInfo());
 foreach ($headers as $key => $values) {
+    
+    // Don't overwrite security headers.
+    if(isset($required_security_headers[$key])) {
+        continue;
+    }
+    
     if (! is_array(($values))) {
         $values = array(
             $values
