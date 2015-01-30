@@ -3,6 +3,8 @@
 	manifest="<?php print $rwb_path_relative_to_request_path ?>/rwb.appcache?hash=<?php print rwb_appcache_get_hash() ?>">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, user-scalable=yes">
 <title><?php print self::$website_title ?></title>
 <?php print '<style>'; require 'substitute-page.css'; print '</style>'; ?>
 <script>
@@ -26,8 +28,8 @@ if (top != self && window.name == '<?php print self::IFRAME_WINDOW_NAME ?>') {
 		<?php } ?>
 	</div>
 	<iframe frameBorder="0" scrolling="no" verticalscrolling="no"
-		name="<?php print self::IFRAME_WINDOW_NAME ?>"
-		seamless="seamless" height="600px" src="<?php print $iframe_src ?>"></iframe>
+		name="<?php print self::IFRAME_WINDOW_NAME ?>" seamless="seamless"
+		height="600px" src="<?php print $iframe_src ?>"></iframe>
 	<script
 		src="<?php print $rwb_path_relative_to_request_path ?>/jquery-1.11.1.min.js"></script>
 	<script>
