@@ -220,17 +220,15 @@ class ProxyHttpResponse
                 if ($this->getResponseCode() == 200 &&
                      $_SERVER['REQUEST_METHOD'] == 'GET') {
                     
-                    if ($dom) {
-                        RedirectWhenBlockedFull::setCharset(
-                            $this->getCharsetFromHeadersOrDom($dom));
-                    }
+                    RedirectWhenBlockedFull::setCharset(
+                        $this->getCharsetFromHeadersOrDom($dom));
                     
                     RedirectWhenBlockedFull::setWebsiteTitle($title);
                     RedirectWhenBlockedFull::run();
                     
                     if (RedirectWhenBlockedFull::getOutputType() ==
                          RedirectWhenBlockedFull::OUTPUT_TYPE_JSONP) {
-                             
+                        
                         // RWB will turn output into JSONP. Remove content-type header to keep header sent by RWB.
                         if (isset($this->headers['Content-Type'])) {
                             unset($this->headers['Content-Type']);
@@ -346,16 +344,18 @@ class ProxyHttpResponse
         }
         
         // If no headers, try to find a meta tag.
-        foreach ($dom->find('meta[http-equiv=Content-Type]') as $meta) {
-            $content = $meta->getAttribute('content');
-            if ($content) {
-                $content_chunks = explode(';', $content, 2);
-                if (isset($content_chunks[1])) {
-                    $charset_key_value_str = trim($content_chunks[1]);
-                    $charset_key_value_arr = explode('=', 
-                        $charset_key_value_str, 2);
-                    if (isset($charset_key_value_arr[1])) {
-                        return $charset_key_value_arr[1];
+        if ($dom) {
+            foreach ($dom->find('meta[http-equiv=Content-Type]') as $meta) {
+                $content = $meta->getAttribute('content');
+                if ($content) {
+                    $content_chunks = explode(';', $content, 2);
+                    if (isset($content_chunks[1])) {
+                        $charset_key_value_str = trim($content_chunks[1]);
+                        $charset_key_value_arr = explode('=', 
+                            $charset_key_value_str, 2);
+                        if (isset($charset_key_value_arr[1])) {
+                            return $charset_key_value_arr[1];
+                        }
                     }
                 }
             }
