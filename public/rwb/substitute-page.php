@@ -29,7 +29,7 @@ if (top != self && window.name == '<?php print self::IFRAME_WINDOW_NAME ?>') {
 	</div>
 	<iframe frameBorder="0" scrolling="no" verticalscrolling="no"
 		name="<?php print self::IFRAME_WINDOW_NAME ?>" seamless="seamless"
-		height="600px" src="<?php print $iframe_src ?>"></iframe>
+		height="600px" src="<?php print htmlspecialchars($iframe_src) ?>"></iframe>
 	<script
 		src="<?php print $rwb_path_relative_to_request_path ?>/jquery-1.11.1.min.js"></script>
 	<script>

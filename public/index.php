@@ -11,7 +11,10 @@ $required_security_headers['X-Content-Type-Options'] = 'nosniff';
 $required_security_headers['X-Download-Options'] = 'noopen';
 $required_security_headers['X-Frame-Options'] = 'sameorigin';
 $required_security_headers['X-XSS-Protection'] = '1; mode=block';
-$required_security_headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubdomains';
+
+// HSTS disabled for now.
+//$required_security_headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubdomains';
+
 foreach ($required_security_headers as $key => $value) {
     header($key . ': ' . $value);
 }
