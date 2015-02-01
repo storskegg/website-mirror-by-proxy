@@ -83,7 +83,7 @@ class ProxyHttpResponse
             
             // Header redirects require full URLs, with scheme and host.
             if (! parse_url($headers['Location'], PHP_URL_HOST)) {
-                $headers['Location'] = RedirectWhenBlockedFull::getBaseUrl() .
+                $headers['Location'] = RedirectWhenBlockedFull::getBaseUrl(true) .
                      ltrim($headers['Location'], '/');
             }
         }
@@ -216,9 +216,7 @@ class ProxyHttpResponse
                     }
                 }
                 
-                // Only apply RWB if response is 200 and request method is GET.
-                if ($this->getResponseCode() == 200 &&
-                     $_SERVER['REQUEST_METHOD'] == 'GET') {
+                if ($this->shouldUseRedirectWhenBlocked()) {
                     
                     RedirectWhenBlockedFull::setCharset(
                         $this->getCharsetFromHeadersOrDom($dom));
@@ -385,6 +383,19 @@ class ProxyHttpResponse
                 return self::CONTENT_TYPE_TEXT_CSS;
             
             case 'text/html':
+                
+                // This indicates it's an ajax request. Some servers don't set
+                // the content-type header correctly.
+                if ($this->request->getHeader('X-Requested-With')) {
+                    return self::CONTENT_TYPE_JAVASCRIPT;
+                }
+                
+                // This indicates JSON. Same as above.
+                if (stripos($this->request->getHeader('Accept'), 
+                    'application/json') !== false) {
+                    return self::CONTENT_TYPE_JSON;
+                }
+                
                 return self::CONTENT_TYPE_TEXT_HTML;
         }
     }
@@ -417,5 +428,22 @@ class ProxyHttpResponse
         $html = $dom->__toString();
         $this->destroyDom($dom);
         $dom = $this->getDomFromHtml($html);
+    }
+
+    private function shouldUseRedirectWhenBlocked()
+    {
+        
+        // Don't use if response code isn't 200. Ie redirects shouldn't be
+        // overridden, and error pages shouldn't be cached.
+        if ($this->getResponseCode() != 200) {
+            return false;
+        }
+        
+        // Don't use for POST requests.
+        if ($_SERVER['REQUEST_METHOD'] != 'GET') {
+            return false;
+        }
+        
+        return true;
     }
 }
