@@ -66,7 +66,11 @@ class ProxyHttpRequest extends http\Client\Request
             'Host',
             'X-Forwarded-Host',
             'X-Forwarded-Server',
-            'X-Varnish'
+            'X-Varnish',
+            
+            // Otherwise CloudfFront to CloudFront requests are denied:
+            'Via',
+            'X-Amz-Cf-Id'
         );
         
         if (! Conf::$cookies_enabled) {
