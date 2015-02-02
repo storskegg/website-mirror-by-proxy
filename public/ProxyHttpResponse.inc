@@ -143,26 +143,23 @@ class ProxyHttpResponse
             
             case self::CONTENT_TYPE_TEXT_CSS:
                 
-                $url_path_depth = count(
-                    explode('/', 
-                        trim($this->request->getUrlComponent('path'), '/'))) - 1;
-                if ($url_path_depth) {
-                    $css_base_url = str_repeat('../', $url_path_depth);
-                } else {
-                    $css_base_url = './';
-                }
+                $css_base_url = $this->getCssBaseUrl();
                 
                 // Convert protocol relative URLs to HTTPS.
                 $body = str_replace('url(//', 'url(https://', $body);
                 $body = str_replace('url("//', 'url("https://', $body);
                 $body = str_replace('url(\'//', 'url(\'https://', $body);
                 
-                $body = str_replace('url("../', 'url("' . $css_base_url . '../', 
-                    $body);
-                $body = str_replace('url(\'../', 
-                    'url(\'' . $css_base_url . '../', $body);
-                $body = str_replace('url(../', 'url(' . $css_base_url . '../', 
-                    $body);
+                // Disabling this part. Not sure why it was added in the first place.
+                /*
+                 * $body = str_replace('url("../', 'url("' . $css_base_url . '../',
+                 * $body);
+                 * $body = str_replace('url(\'../',
+                 * 'url(\'' . $css_base_url . '../', $body);
+                 * $body = str_replace('url(../', 'url(' . $css_base_url . '../',
+                 * $body);
+                 */
+                
                 $body = str_replace('url("/', 'url("' . $css_base_url, $body);
                 $body = str_replace('url(\'/', 'url(\'' . $css_base_url, $body);
                 $body = str_replace('url(/', 'url(' . $css_base_url, $body);
@@ -397,6 +394,17 @@ class ProxyHttpResponse
                 }
                 
                 return self::CONTENT_TYPE_TEXT_HTML;
+        }
+    }
+
+    private function getCssBaseUrl()
+    {        
+        $url_path_depth = count(
+            explode('/', trim($this->request->getUrlComponent('path'), '/'))) - 1;
+        if ($url_path_depth) {
+            return str_repeat('../', $url_path_depth);
+        } else {
+            return './';
         }
     }
 
