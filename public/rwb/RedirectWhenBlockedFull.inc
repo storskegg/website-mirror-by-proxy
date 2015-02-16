@@ -27,7 +27,7 @@ class RedirectWhenBlockedFull
 			mirror URL here:'
     );
 
-    private static $alt_base_urls, $alt_url_collections;
+    private static $alt_base_urls = array(), $alt_url_collections = array();
     
     // Manually set charset.
     private static $charset;
@@ -37,6 +37,37 @@ class RedirectWhenBlockedFull
     
     // Shown on the cached page while the content is loading.
     private static $website_title;
+
+    public static function addAltBaseUrl($alt_base_url) {
+        self::$alt_base_urls[] = $alt_base_url;
+    }
+
+    public static function addAltBaseUrls($alt_base_urls) {
+        foreach($alt_base_urls as $alt_base_url) {
+            self::addAltBaseUrl($alt_base_url);
+        }
+    }
+    
+    public static function addAltUrlCollection($alt_url_collection)
+    {
+        self::$alt_url_collections[] = $alt_url_collection;
+    }
+
+    public static function addAltUrlCollections($alt_url_collections) {
+        foreach($alt_url_collections as $alt_url_collection) {
+            self::addAltUrlCollection($alt_url_collection);
+        }
+    }
+
+    public static function addUrlsFromConfDir()
+    {
+        $alt_base_urls = file(__DIR__ . '/conf/alt_base_urls.txt', 
+            FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        self::addAltBaseUrls($alt_base_urls);
+        $alt_url_collections = file(__DIR__ . '/conf/alt_url_collections.txt', 
+            FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        self::addAltUrlCollections($alt_url_collections);
+    }
 
     public static function getAltBaseUrls()
     {
@@ -169,8 +200,7 @@ class RedirectWhenBlockedFull
     
     // Main activity.
     public static function run()
-    {
-        
+    {        
         /*
          * Normal request. Substitute the response with our own page.
          */
@@ -240,24 +270,10 @@ class RedirectWhenBlockedFull
     {
         self::$base_url_suffix = $base_url_suffix;
     }
-    
-    public static function setCharset($charset) {
+
+    public static function setCharset($charset)
+    {
         self::$charset = $charset;
-    }
-
-    public static function setUrls($alt_base_urls, $alt_url_collections)
-    {
-        self::$alt_base_urls = $alt_base_urls;
-        self::$alt_url_collections = $alt_url_collections;
-    }
-
-    public static function setUrlsFromConfDir()
-    {
-        $alt_base_urls = file(__DIR__ . '/conf/alt_base_urls.txt', 
-            FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        $alt_url_collections = file(__DIR__ . '/conf/alt_url_collections.txt', 
-            FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        self::setUrls($alt_base_urls, $alt_url_collections);
     }
 
     public static function setWebsiteTitle($website_title)

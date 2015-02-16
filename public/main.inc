@@ -38,7 +38,7 @@ function getDownstreamOrigin()
 	return $downstream_origin_verified;
 }
 
-RedirectWhenBlockedFull::setUrlsFromConfDir();
+RedirectWhenBlockedFull::addUrlsFromConfDir();
 
 TextExternalUrlFilters::addHost(
 	Conf::getDefaultUpstreamBaseUrlComponent('host'));

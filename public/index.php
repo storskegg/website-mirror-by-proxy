@@ -49,6 +49,38 @@ if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME])) {
                 print json_encode($urls);
                 exit();
             }
+            
+            if ($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
+                 Conf::OUTPUT_TYPE_STATUS) {
+                header('Content-Type: text/plain');
+                require 'status_tests/StatusTest.inc';
+                
+                foreach(scandir('status_tests/enabled') as $file) {
+                    if($file[0] == '.') {
+                        continue;
+                    }
+                    require 'status_tests/enabled/' . $file;
+                    $class = basename($file, '.inc');
+                    $test = new $class();
+                    $tests[] = $test;
+                }
+                
+                foreach($tests as $test) {
+                    if(!$test->passed()) {
+                        http_response_code(503);
+                        break;
+                    }
+                }
+                
+                foreach($tests as $i => $test) {
+                    if($i > 0) {
+                        print "\n---\n";
+                    }
+                    print $test;
+                }
+                
+                exit();
+            }
         }
     }
 }

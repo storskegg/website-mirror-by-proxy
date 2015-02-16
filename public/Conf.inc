@@ -7,6 +7,8 @@ class Conf
     const OUTPUT_TYPE_ALT_BASE_URLS = 10;
 
     const OUTPUT_TYPE_APK_URLS = 11;
+
+    const OUTPUT_TYPE_STATUS = 12;
     
     const OUTPUT_TYPE_APK = 'apk';
 
