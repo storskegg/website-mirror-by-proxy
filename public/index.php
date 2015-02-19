@@ -13,7 +13,7 @@ $required_security_headers['X-Frame-Options'] = 'sameorigin';
 $required_security_headers['X-XSS-Protection'] = '1; mode=block';
 
 // HSTS disabled for now.
-//$required_security_headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubdomains';
+// $required_security_headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubdomains';
 
 foreach ($required_security_headers as $key => $value) {
     header($key . ': ' . $value);
@@ -52,11 +52,12 @@ if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME])) {
             
             if ($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME] ==
                  Conf::OUTPUT_TYPE_STATUS) {
+                header('Cache-Control: max-age=0');
                 header('Content-Type: text/plain');
                 require 'status_tests/StatusTest.inc';
                 
-                foreach(scandir('status_tests/enabled') as $file) {
-                    if($file[0] == '.') {
+                foreach (scandir('status_tests/enabled') as $file) {
+                    if ($file[0] == '.') {
                         continue;
                     }
                     require 'status_tests/enabled/' . $file;
@@ -65,15 +66,15 @@ if (isset($_GET[RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME])) {
                     $tests[] = $test;
                 }
                 
-                foreach($tests as $test) {
-                    if(!$test->passed()) {
+                foreach ($tests as $test) {
+                    if (! $test->passed()) {
                         http_response_code(503);
                         break;
                     }
                 }
                 
-                foreach($tests as $i => $test) {
-                    if($i > 0) {
+                foreach ($tests as $i => $test) {
+                    if ($i > 0) {
                         print "\n---\n";
                     }
                     print $test;
@@ -129,7 +130,7 @@ header($response->getResponseInfo());
 foreach ($headers as $key => $values) {
     
     // Don't overwrite security headers.
-    if(isset($required_security_headers[$key])) {
+    if (isset($required_security_headers[$key])) {
         continue;
     }
     
