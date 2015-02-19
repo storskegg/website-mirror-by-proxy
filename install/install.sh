@@ -12,7 +12,7 @@ if [ $(/usr/bin/id -u) -ne 0 ]; then
 fi
 
 echo "Installing Apache and PHP"
-apt-get install apache2 php5
+apt-get install apache2 php5 php5-curl
 
 echo "Installing HTTP extension"
 apt-get install libpcre3-dev libcurl3-openssl-dev php5-dev php-http php5-mcrypt php-pear
