@@ -38,6 +38,8 @@ class Conf
     public static $proxy_http_request_retrycount = 1;
 
     public static $proxy_http_request_timeout = 30;
+    
+    public static $china_ip_for_dns_poisoning_test;
 
     public static function appendToHtmlBody($str)
     {
