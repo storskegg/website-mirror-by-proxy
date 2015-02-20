@@ -19,6 +19,10 @@ class Conf
     public static $cookies_enabled = false;
 
     public static $default_cache_control_max_age = 60;
+    
+    public static $default_cache_control_stale_if_error = 86400; // 1 day.
+    
+    public static $default_cache_control_stale_while_revalidate = 600;
 
     public static $default_upstream_base_url;
     

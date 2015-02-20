@@ -11,6 +11,8 @@ class ProxyHttpResponse
 
     const CONTENT_TYPE_JSON = 4;
 
+    const CONTENT_TYPE_OTHER = 5;
+
     private $body, $headers, $response_code, $response_info;
 
     private $response, $request;
@@ -74,6 +76,21 @@ class ProxyHttpResponse
     {
         $headers = $this->headers;
         Log::add($headers, 'headers raw');
+        
+        // For HTML content, overwrite upstream cache conf.
+        if (isset($headers['Cache-Control'])) {
+            if ($this->getContentType() == $this::CONTENT_TYPE_TEXT_HTML) {
+                unset($headers['Cache-Control']);
+            }
+        }         
+
+        // If no cache conf, for some content types, add longer cache.
+        else {
+            if ($this->getContentType() == $this::CONTENT_TYPE_OTHER) {
+                $headers['Cache-Control'] = getCacheControlHeader(60 * 60, 
+                    60 * 60, 60 * 60 * 24);
+            }
+        }
         
         // If redirect, rewrite Location header.
         if (isset($headers['Location'])) {
@@ -359,6 +376,15 @@ class ProxyHttpResponse
 
     private function getContentType()
     {
+        static $content_type;
+        if (! isset($content_type)) {
+            $content_type = $this->getContentTypeFromHeader();
+        }
+        return $content_type;
+    }
+
+    private function getContentTypeFromHeader()
+    {
         $content_type = $this->getHeader('Content-Type');
         $content_type_chunks = explode(';', $content_type, 2);
         if (count($content_type_chunks) > 1) {
@@ -395,10 +421,12 @@ class ProxyHttpResponse
                 
                 return self::CONTENT_TYPE_TEXT_HTML;
         }
+        
+        return self::CONTENT_TYPE_OTHER;
     }
 
     private function getCssBaseUrl()
-    {        
+    {
         $url_path_depth = count(
             explode('/', trim($this->request->getUrlComponent('path'), '/'))) - 1;
         if ($url_path_depth) {

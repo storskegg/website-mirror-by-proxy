@@ -4,7 +4,11 @@ require 'main.inc';
 // Default cache.
 // Will be overwritten by message below if it has it's own Cache-Control header.
 // Send this early, to prevent caching error pages for longer than the duration.
-header('Cache-Control: max-age=' . Conf::$default_cache_control_max_age);
+header(
+    'Cache-Control: ' . getCacheControlHeader(
+        Conf::$default_cache_control_max_age, 
+        Conf::$default_cache_control_stale_while_revalidate, 
+        Conf::$default_cache_control_stale_if_error));
 
 // Make sure to send these security headers are included in all responses.
 $required_security_headers['X-Content-Type-Options'] = 'nosniff';
