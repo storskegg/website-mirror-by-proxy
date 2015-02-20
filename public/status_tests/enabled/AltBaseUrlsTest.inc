@@ -10,6 +10,8 @@ class AltBaseUrlsTest extends StatusTest
             return;
         }
         
+        $domains = array();
+        
         foreach (RedirectWhenBlockedFull::getAltBaseUrls() as $url) {
             // Test HTTP response code.
             $ch = curl_init($url);
@@ -25,19 +27,38 @@ class AltBaseUrlsTest extends StatusTest
             }
             
             // Test DNS poisoning.
-            if (! Conf::$china_ip_for_dns_poisoning_test) {
-                $this->messages[] = 'china_ip_for_dns_poisoning_test not set';
-                $this->n_failed ++;
-            } else {
-                $domain = parse_url($url, PHP_URL_HOST);
-                $command = 'dig +time=5 +tries=1 @' . Conf::$china_ip_for_dns_poisoning_test . ' ' .
-                     $domain;
-                exec($command, $output, $return_var);
-                if ($return_var == 0) {
-                    $this->n_failed ++;
-                    $this->messages[] = "$domain poisoned ($return_var)";
+            $domain = parse_url($url, PHP_URL_HOST);
+            $domains[] = $domain;
+        }
+        
+        if (! Conf::$china_ip_for_dns_poisoning_test) {
+            $this->messages[] = 'china_ip_for_dns_poisoning_test not set';
+            $this->n_failed ++;
+        } else {
+            $command = '';
+            foreach ($domains as $domain) {
+                $command .= '(dig +time=5 +tries=1 @' .
+                     Conf::$china_ip_for_dns_poisoning_test . ' ' . $domain .
+                     ' > /dev/null ; echo "' . $domain . ':"$?)  & ';
+            }
+            $command = trim($command) . '& wait';
+            exec($command, $output);
+            foreach ($output as $line) {
+                $line_chunks = explode(':', $line, 2);
+                if (count($line_chunks) == 2 && $line_chunks[0] &&
+                     $line_chunks[1] >= 0) {
+                    list ($domain, $dig_exit_code) = $line_chunks;
+                    if ($dig_exit_code == 0) {
+                        $this->messages[] = $domain . ' is poisoned (' .
+                             $dig_exit_code . ')';
+                        $this->n_failed ++;
+                    } else {
+                        $this->messages[] = $domain . ' is not poisoned (' .
+                             $dig_exit_code . ')';
+                    }
                 } else {
-                    $this->messages[] = "$domain not poisoned ($return_var)";
+                    $this->messages[] = 'unknown dig result (' . $line . ')';
+                    $this->n_failed ++;
                 }
             }
         }
