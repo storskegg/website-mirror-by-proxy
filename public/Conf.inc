@@ -9,19 +9,23 @@ class Conf
     const OUTPUT_TYPE_APK_URLS = 11;
 
     const OUTPUT_TYPE_STATUS = 12;
-    
+
     const OUTPUT_TYPE_APK = 'apk';
 
     public static $alt_base_urls_key;
+    
+    // 1 day.
+    public static $alt_base_urls_modified_ago_max = 86400;
 
     public static $apk_url;
-    
+
     public static $cookies_enabled = false;
 
     public static $default_cache_control_max_age = 60;
     
-    public static $default_cache_control_stale_if_error = 86400; // 1 day.
-    
+    // 1 day.
+    public static $default_cache_control_stale_if_error = 86400;
+
     public static $default_cache_control_stale_while_revalidate = 600;
 
     public static $default_upstream_base_url;
@@ -42,7 +46,7 @@ class Conf
     public static $proxy_http_request_retrycount = 1;
 
     public static $proxy_http_request_timeout = 30;
-    
+
     public static $china_ip_for_dns_poisoning_test;
 
     public static function appendToHtmlBody($str)

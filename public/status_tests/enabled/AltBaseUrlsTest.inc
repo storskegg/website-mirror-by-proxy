@@ -67,7 +67,7 @@ class AltBaseUrlsTest extends StatusTest
              '/rwb/conf/alt_base_urls.txt';
         $alt_base_urls_modified_ago = time() - filemtime($alt_base_urls_file);
         $this->messages[] = "$alt_base_urls_file modified $alt_base_urls_modified_ago seconds ago";
-        if ($alt_base_urls_modified_ago > 60 * 60 * 24) {
+        if ($alt_base_urls_modified_ago > Conf::$alt_base_urls_modified_ago_max) {
             $this->messages[] = "$alt_base_urls_file expired";
             return false;
         }
