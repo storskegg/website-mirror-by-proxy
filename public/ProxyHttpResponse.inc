@@ -438,7 +438,14 @@ class ProxyHttpResponse
 
     private function getDomFromHtml($html)
     {
-        return str_get_html($html, false, false, '', false);
+        $dom = str_get_html($html, false, false, '', false);
+        
+        if($dom) {
+            return $dom;
+        } else {
+            // return NULL instead of FALSE so that it won't break the simple_html_dom type check.
+            return NULL;
+        }
     }
 
     private function getFilteredSetCookie($set_cookie)
