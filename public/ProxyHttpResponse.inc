@@ -335,7 +335,7 @@ class ProxyHttpResponse
         return $body;
     }
 
-    private function getCharsetFromHeadersOrDom(simple_html_dom $dom)
+    private function getCharsetFromHeadersOrDom($dom)
     {
         // Allow manually overriding this.
         if (Conf::$default_upstream_charset) {
@@ -438,14 +438,7 @@ class ProxyHttpResponse
 
     private function getDomFromHtml($html)
     {
-        $dom = str_get_html($html, false, false, '', false);
-        
-        if($dom) {
-            return $dom;
-        } else {
-            // return NULL instead of FALSE so that it won't break the simple_html_dom type check.
-            return NULL;
-        }
+        return str_get_html($html, false, false, '', false);
     }
 
     private function getFilteredSetCookie($set_cookie)
