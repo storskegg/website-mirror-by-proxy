@@ -13,7 +13,6 @@ header(
 // Make sure to send these security headers are included in all responses.
 $required_security_headers['X-Content-Type-Options'] = 'nosniff';
 $required_security_headers['X-Download-Options'] = 'noopen';
-$required_security_headers['X-Frame-Options'] = 'sameorigin';
 $required_security_headers['X-XSS-Protection'] = '1; mode=block';
 
 // HSTS disabled for now.
@@ -123,11 +122,16 @@ $response = new ProxyHttpResponse($client->getResponse(), $request);
 $body = $response->getBody();
 $headers = $response->getHeaders();
 
+// Default - can be overriden below.
+$headers['X-Frame-Options'] = 'SAMEORIGIN';
+
 if (getDownstreamOrigin()) {
     $headers['Access-Control-Allow-Origin'] = getDownstreamOrigin();
     
     // See http://stackoverflow.com/questions/12409600/error-request-header-field-content-type-is-not-allowed-by-access-control-allow.
     $headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
+
+    $headers['X-Frame-Options'] = 'ALLOW-FROM ' . getDownstreamOrigin();
 }
 
 header($response->getResponseInfo());
