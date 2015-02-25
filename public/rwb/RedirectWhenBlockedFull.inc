@@ -36,6 +36,7 @@ class RedirectWhenBlockedFull
     private static $base_url_suffix = '';
     
     // Shown on the cached page while the content is loading.
+    private static $html_body_appendix = '';
     private static $website_title;
 
     public static function addAltBaseUrl($alt_base_url) {
@@ -67,6 +68,11 @@ class RedirectWhenBlockedFull
         $alt_url_collections = file(__DIR__ . '/conf/alt_url_collections.txt', 
             FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         self::addAltUrlCollections($alt_url_collections);
+    }
+    
+    public static function appendToHtmlBody($str)
+    {
+        self::$html_body_appendix .= $str;
     }
 
     public static function getAltBaseUrls()

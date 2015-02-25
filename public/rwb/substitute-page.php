@@ -49,5 +49,6 @@ if (top != self && window.name == '<?php print self::IFRAME_WINDOW_NAME ?>') {
     	<?php print str_replace("\n", "\n\t\t", file_get_contents(__DIR__ . '/substitute-page.js')) . "\n"; ?>
 	}
 	</script>
+	<?php print self::$html_body_appendix ?>
 </body>
 </html>

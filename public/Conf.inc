@@ -49,6 +49,33 @@ class Conf
 
     public static $china_ip_for_dns_poisoning_test;
 
+    public static function addGoogleAnalyticsId($id) {
+        static $i;
+        if(!isset($i)) {
+            $i = 0;
+        }
+        $i++;
+        
+        $name = 'wmbp' . $i;
+        $ga_script = <<<EOF
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', '$id', 'auto', {'name': '$name'});
+  ga('$name.send', 'pageview');
+
+</script>
+EOF;
+        // Appends to main page / iframe container.
+        RedirectWhenBlockedFull::appendToHtmlBody($ga_script);
+        
+        // Appends to iframed content.
+        self::appendToHtmlBody($ga_script);
+    }
+    
     public static function appendToHtmlBody($str)
     {
         self::$html_body_appendix .= $str;
