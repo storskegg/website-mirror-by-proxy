@@ -245,6 +245,13 @@ class ProxyHttpResponse
                         if (isset($this->headers['Content-Type'])) {
                             unset($this->headers['Content-Type']);
                         }
+                        
+                        // Also remove charset specification in inline HTML.
+                        if($dom) {
+                            foreach($dom->find('meta[http-equiv=Content-Type], meta[charset]') as $meta) {
+                                $meta->outertext = '';
+                            }
+                        }
                     }
                 }
                 
