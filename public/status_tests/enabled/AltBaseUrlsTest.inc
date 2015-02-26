@@ -43,6 +43,7 @@ class AltBaseUrlsTest extends StatusTest
             }
             $command = trim($command) . '& wait';
             exec($command, $output);
+            $n_domains_not_poisoned = 0;
             foreach ($output as $line) {
                 $line_chunks = explode(':', $line, 2);
                 if (count($line_chunks) == 2 && $line_chunks[0] &&
@@ -51,15 +52,19 @@ class AltBaseUrlsTest extends StatusTest
                     if ($dig_exit_code == 0) {
                         $this->messages[] = $domain . ' is poisoned (' .
                              $dig_exit_code . ')';
-                        $this->n_failed ++;
                     } else {
                         $this->messages[] = $domain . ' is not poisoned (' .
                              $dig_exit_code . ')';
+                        $n_domains_not_poisoned++;
                     }
                 } else {
                     $this->messages[] = 'unknown dig result (' . $line . ')';
-                    $this->n_failed ++;
                 }
+            }
+            
+            if(!$n_domains_not_poisoned) {
+                $this->messages[] = 'no unpoisoned domains available';
+                $this->n_failed ++;
             }
         }
         
