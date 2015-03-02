@@ -35,6 +35,7 @@ function manageIframe($iframe) {
 		$iframe.contents().find('head base').attr('target', window.name);
 	}
 
+	// Set height.
 	var targetHeight = $(window).height();
 	if($iframe[0].contentWindow.window != null && $iframe[0].contentWindow.window.document.body != null) {
 		targetHeight = Math.max(
@@ -51,6 +52,25 @@ function manageIframe($iframe) {
 
 	if(targetHeight > actualHeight || targetHeight < (actualHeight - 100)) {
 		$iframe.height(targetHeight + 10);
+	}
+
+	// Set width.
+	var targetWidth = $(window).width();
+	if($iframe[0].contentWindow.window != null && $iframe[0].contentWindow.window.document.body != null) {
+		targetWidth = Math.max(
+				targetWidth,
+				$iframe[0].contentWindow.window.document.body.scrollWidth
+		);
+	}
+
+	var actualWidth = $iframe.width()
+	+ parseInt($iframe.contents().find('body').css('margin-left'))
+	+ parseInt($iframe.contents().find('body').css('padding-left'))
+	+ parseInt($iframe.contents().find('body').css('padding-right'))
+	+ parseInt($iframe.contents().find('body').css('margin-right'));
+
+	if(targetWidth > actualWidth || targetWidth < (actualWidth - 100)) {
+		$iframe.width(targetWidth + 10);
 	}
 }
 
