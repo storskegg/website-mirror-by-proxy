@@ -16,9 +16,9 @@ if (top != self && window.name == '<?php print self::IFRAME_WINDOW_NAME ?>') {
 </head>
 <body>
 	<div>
-		<p><?php print RedirectWhenBlockedFull::$translatable_text['loading'] ?></p>
+		<p><?php print self::getText('loading') ?></p>
 		<h1><?php print self::$website_title ?></h1>
-		<p><?php print RedirectWhenBlockedFull::$translatable_text['if_website_fails'] ?></p>
+		<p><?php print self::getText('if_website_fails') ?></p>
 		<?php if(self::$alt_url_collections) { ?>
 		<ul>
 			<?php foreach(self::$alt_url_collections as $alt_url_collection) { ?>
@@ -46,6 +46,7 @@ if (top != self && window.name == '<?php print self::IFRAME_WINDOW_NAME ?>') {
 	} else {
     	window.name = '<?php print self::TOP_WINDOW_NAME ?>';
     	var alt_base_urls = <?php print json_encode(self::$alt_base_urls) ?>;
+    	var if_website_fails_top = <?php print json_encode(self::getText('if_website_fails_top')) ?>;
     	<?php print str_replace("\n", "\n\t\t", file_get_contents(__DIR__ . '/substitute-page.js')) . "\n"; ?>
 	}
 	</script>

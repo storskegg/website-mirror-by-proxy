@@ -10,7 +10,7 @@ function iframeLoaded($iframe) {
 	
 	console.log('iframe loaded');
 	$iframe.data('hasLoaded', true);
-	$('div').html($('div p:nth(1)').text() + $('div li').map(function() { return $(this).html() }).get().join(', '));
+	$('div').html(if_website_fails_top);
 	$('div').addClass('top');
 
 	manageIframe($iframe);
