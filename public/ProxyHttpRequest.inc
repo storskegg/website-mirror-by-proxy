@@ -41,7 +41,7 @@ class ProxyHttpRequest extends http\Client\Request
         }
         
         $this->setOptions(
-            [
+            [                
                 'connecttimeout' => Conf::$proxy_http_request_connecttimeout,
                 'dns_cache_timeout' => Conf::$proxy_http_request_dns_cache_timeout,
                 'retrycount' => Conf::$proxy_http_request_retrycount,
@@ -56,6 +56,11 @@ class ProxyHttpRequest extends http\Client\Request
         $headers = getallheaders();
         
         $ignored_headers = array(
+
+            // This only applies to the connection between the proxy and the user, 
+            // not the proxy and the upstream origin.
+            'Accept-Encoding',
+            
             'Connection',
             'Content-Length',
             'Fastly-Client',
