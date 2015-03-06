@@ -1,15 +1,15 @@
 <?php
-$apk_url = RedirectWhenBlockedFull::getBaseUrl() . '?' .
+$apk_url = './?' .
      RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME . '=' .
      Conf::OUTPUT_TYPE_APK;
 
 $apk_filename = basename(parse_url(Conf::$apk_url, PHP_URL_PATH));
 
-$app_url = RedirectWhenBlockedFull::getBaseUrl() . '?' .
+$app_url = './?' .
      RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME . '=' .
      Conf::OUTPUT_TYPE_APP;
 
-$app_qr_url = RedirectWhenBlockedFull::getBaseUrl() . '?' .
+$app_qr_url = './?' .
      RedirectWhenBlockedFull::QUERY_STRING_PARAM_NAME . '=' .
      Conf::OUTPUT_TYPE_APP_QR;
 ?>
