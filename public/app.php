@@ -23,6 +23,7 @@ $app_qr_url = RedirectWhenBlockedFull::getBaseUrl() . '?' .
 <style>
 body {
     line-height: 150%;
+    margin: 0;
 	text-align: center;
 	word-wrap: break-word;
 }
@@ -32,9 +33,9 @@ a {
 }
 
 #main {
-	border: thin solid green;
+	border: 10px solid lightgrey;
 	border-radius: 5px;
-	max-width: 200px;
+	max-width: 500px;
 	padding: 8px;
 }
 
