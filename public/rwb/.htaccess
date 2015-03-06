@@ -7,4 +7,5 @@ AddHandler application/x-httpd-php .appcache
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !jquery.*\.js$
 RewriteCond %{REQUEST_FILENAME} !rwb\.appcache$
+RewriteCond %{REQUEST_FILENAME} !spinner.*\.gif$
 RewriteRule . - [F]
