@@ -17,6 +17,8 @@ $app_qr_url = RedirectWhenBlockedFull::getBaseUrl() . '?' .
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, user-scalable=yes">
 <title><?php print $apk_filename ?></title>
 <style>
 body {
