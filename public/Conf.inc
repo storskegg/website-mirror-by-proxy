@@ -57,7 +57,8 @@ class Conf
 
     public static $translatable_text = array(
         'downloading' => 'Downloading {{APK}} ...',
-        'scan_or_click' => 'Scan or click on your Android device to download the app.'
+        'scan_or_click' => 'Scan or click on your Android device to download the app.',
+        'weixin' => 'To download {{APK}} click the top right button and select "Open in a browser"'
     );
 
     public static function addGoogleAnalyticsId($id)

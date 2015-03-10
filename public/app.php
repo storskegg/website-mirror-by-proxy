@@ -39,7 +39,7 @@ a {
 	padding: 8px;
 }
 
-#dl {
+#dl, #weixin {
 	font-weight: bold;
 	margin-bottom: 20px;
 }
@@ -54,6 +54,9 @@ a {
 		<div id="dl" style="display: none">
 			<p><?php print str_replace('{{APK}}', $apk_filename, Conf::$translatable_text['downloading']) ?></p>
 			<img src="rwb/spinner.gif" />
+		</div>
+		<div id="weixin" style="display: none">
+			<p><?php print str_replace('{{APK}}', $apk_filename, Conf::$translatable_text['weixin']) ?></p>
 		</div>
 		<div id="qr">
 			<a href="<?php print $apk_url ?>"> <img
@@ -78,8 +81,12 @@ a {
     var isAndroid = testAndroid.test(navigator.userAgent);
     var isIos = testIos.test(navigator.userAgent);
     var isWeixin = testWeixin.test(navigator.userAgent);
-    if(isAndroid || isWeixin) {
+    if(isAndroid) {
     	dl();
+    }
+    else if(isWeixin) {
+        $('#weixin').show();
+        $('#qr').fadeTo('slow', 0.4);
     }
 
     $('a').click(dl);
