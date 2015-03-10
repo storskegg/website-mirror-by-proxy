@@ -81,15 +81,13 @@ a {
     var isAndroid = testAndroid.test(navigator.userAgent);
     var isIos = testIos.test(navigator.userAgent);
     var isWeixin = testWeixin.test(navigator.userAgent);
-    if(isAndroid) {
-    	dl();
-    }
-    else if(isWeixin) {
+    if(isWeixin) {
         $('#weixin').show();
         $('#qr').fadeTo('slow', 0.4);
     }
-
-    $('a').click(dl);
+    else if(isAndroid) {
+    	dl();
+    }
     </script>
 </body>
 </html>
