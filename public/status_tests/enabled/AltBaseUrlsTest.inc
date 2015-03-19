@@ -13,19 +13,6 @@ class AltBaseUrlsTest extends StatusTest
         $domains = array();
         
         foreach (RedirectWhenBlockedFull::getAltBaseUrls() as $url) {
-            // Test HTTP response code.
-            $ch = curl_init($url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-            $result = curl_exec($ch);
-            $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            if ($http_status == 200) {
-                $this->messages[] = "$url passed ($http_status)";
-            } else {
-                $this->n_failed ++;
-                $this->messages[] = "$url failed ($http_status)";
-            }
             
             // Test DNS poisoning.
             $domain = parse_url($url, PHP_URL_HOST);
